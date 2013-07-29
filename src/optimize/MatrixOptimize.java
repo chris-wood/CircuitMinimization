@@ -8,15 +8,6 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import edu.rit.pj.IntegerForLoop;
-import edu.rit.pj.IntegerSchedule;
-import edu.rit.pj.ParallelRegion;
-import edu.rit.pj.ParallelTeam;
-import edu.rit.pj.reduction.SharedLong;
-import edu.rit.pj.reduction.SharedInteger;
-import edu.rit.pj.reduction.IntegerOp;
-import edu.rit.pj.Comm;
-import edu.rit.pj.BarrierAction;
 
 public class MatrixOptimize
 {
@@ -659,6 +650,14 @@ public class MatrixOptimize
 		// return d.get();
 	}
 
+	// use the fact that traversing all n-bit binary strings of weight OD actually walks a hamiltonian cycle
+	public static int hamiltonPeraltaDistance(Matrix base, int[] f, int od) throws Exception
+	{
+		// TODO: this is a replacement for reachable() - see below.		
+
+		return 0;
+	}
+
 	public static int optimizedPeraltaDistance(Matrix base, int[] newBase, int[] f, int od) throws Exception
 	{
 		for (int i = 0; i < base.getDimension(); i++)
@@ -699,7 +698,6 @@ public class MatrixOptimize
 			return false;
 		}
 
-		// Three cases from Peralta's implementation
 		if (reachable(base, XOR(f, base.getRow(index)), targetDist - 1, index + 1)) 
 		{
 			return true;
@@ -975,674 +973,6 @@ public class MatrixOptimize
 		return new SLP(slp, xorCount, 0); // no ANDs required
 	}
 
-	static int p_xorCount = 0;
-	static int[] p_dist;
-	static ArrayList<String> p_slp;
-	static Matrix p_base;
-	static int p_n;
-	static int[] p_newDist;
-	static int p_i;
-	static int p_ii;
-	static int p_jj;
-	static int p_d;
-	static int[] p_optimalBase;
-	static ArrayList<int[]> p_optimalBases;
-	static ArrayList<int[]> p_optimalDistances;
-	static ArrayList<Pair> p_pairs;
-	static ParallelTeam team = new ParallelTeam();
-	public static SLP parallelPeraltaOptimize(final Matrix m, final int r, final int c, final int tieBreaker) throws Exception
-	{
-		p_slp = new ArrayList<String>();
-		// Create the initial base
-		int[][] b = new int[c][c];
-		for (int i = 0; i < c; i++)
-		{
-			for (int j = 0; j < c; j++)
-			{
-				if (i == j)
-				{
-					b[i][j] = 1;
-				}
-			}
-		}
-		p_base = new Matrix(b, c);
-		
-		// Initialize the distance array and then get the ball rolling
-		p_dist = computeDistance(p_base, m);
-		for (int f = 0; f < p_dist.length; f++)
-		{
-			if (p_dist[f] == 0)
-			{
-				int[] row = m.getRow(f);
-				for (int cc = 0; cc < row.length; cc++)
-				{
-					if (row[cc] == 1)
-					{
-						p_slp.add("y_" + f + " = " + "x_" + cc);
-					}
-				}
-			}
-		}
-
-		p_newDist = new int[m.getDimension()];
-		p_i = m.getLength();
-		final int nVars = m.getLength();
-
-		p_n = p_base.getDimension(); // each row is a base...
-		p_d = sum(p_dist);
-		p_optimalBase = new int[p_base.getLength()]; // was dimension
-		p_optimalBases = new ArrayList<int[]>();
-		p_optimalDistances = new ArrayList<int[]>();
-		p_pairs = new ArrayList<Pair>();
-		p_xorCount = 0;
-
-		// disp("Entering: " + p_n);
-
-		while (isZero(p_dist) == false)
-		{
-			// disp("Here: " + p_n);
-			for (p_ii = 0; p_ii < p_n; p_ii++)
-			{
-				for (p_jj = p_ii + 1; p_jj < p_n; p_jj++)
-				{
-					if (p_ii != p_jj)
-					{
-						p_newDist = new int[m.getDimension()];
-
-						int[] ssum = addMod(p_base.getRow(p_ii), p_base.getRow(p_jj), 2);
-						if (!(p_base.containsRow(ssum)) && !isZero(ssum))
-						{
-							team.execute(new ParallelRegion() // linear combinations get computed in parallel - but can we push parallelism to the outer loop?
-							{
-								public void run() throws Exception // There are many, many combinations (potentially...)
-								{
-									execute (0, m.getDimension() - 1, new IntegerForLoop()
-									{
-										public void run (int first, int last) throws Exception
-										{
-											int[] innersum = addMod(p_base.getRow(p_ii), p_base.getRow(p_jj), 2);
-											// Matrix newBase = p_base.copy();
-											// newBase.appendRow(innersum);
-											for (int k = first; k <= last; k++)
-											{
-												int[] t_fi = m.getRow(k);
-												// p_newDist[k] = optimizedPeraltaDistance(newBase, t_fi);
-												p_newDist[k] = optimizedPeraltaDistance(p_base, innersum, t_fi, p_dist[k]);
-											}
-										}
-									});
-								}
-							});
-
-							int newDistSum = sum(p_newDist);
-							// disp("Sum for " + p_ii + "," + p_jj + " = " + newDistSum);
-							if (newDistSum < p_d)
-							{
-								p_d = newDistSum;
-								p_optimalBases = new ArrayList<int[]>();
-								p_optimalDistances = new ArrayList<int[]>();
-								p_pairs = new ArrayList<Pair>();
-								p_optimalBases.add(ssum);
-								p_optimalDistances.add(p_newDist);
-								p_pairs.add(new Pair(p_ii, p_jj));
-							}
-							else if (newDistSum == p_d)
-							{
-								p_optimalBases.add(ssum);
-								p_optimalDistances.add(p_newDist);
-								p_pairs.add(new Pair(p_ii, p_jj));
-							}
-							ssum = null;
-						}	
-					}
-				}
-			}
-	
-			// disp("Executing the barrier action for tie breaking and round updates");
-			// Resolve using norms...
-			int mi = 0;
-			int mj = 0;
-			double maxNorm = Double.MAX_VALUE;
-			switch (tieBreaker)
-			{
-				case 0: // norm
-					maxNorm = euclideanNorm(p_optimalDistances.get(0));
-					p_optimalBase = p_optimalBases.get(0);
-					p_newDist = p_optimalDistances.get(0);
-					mi = p_pairs.get(0).i;
-					mj = p_pairs.get(0).j;
-					for (int i = 1; i < p_optimalDistances.size(); i++)
-					{
-						double norm = euclideanNorm(p_optimalDistances.get(i));
-						if (norm > maxNorm)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;
-						}
-						else if (norm == maxNorm && comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;	
-						}
-					}
-					break;
-				case 1: // norm-largest
-					int largestDist = largest(p_optimalDistances.get(0));
-					// for (int i = 0; i < p_optimalDistances.get(0).length; i++)
-					// {
-					// 	int tdist = p_optimalDistances.get(0)[i];
-					// 	largestDist = tdist > largestDist ? tdist : largestDist;
-					p_optimalBase = p_optimalBases.get(0);
-					p_newDist = p_optimalDistances.get(0);
-					mi = p_pairs.get(0).i;
-					mj = p_pairs.get(0).j;
-					// }
-					maxNorm = Math.pow(euclideanNorm(p_optimalDistances.get(0)), 2);
-					maxNorm = maxNorm - (double)largestDist;
-					for (int i = 1; i < p_optimalDistances.size(); i++)
-					{
-						double norm = Math.pow(euclideanNorm(p_optimalDistances.get(i)), 2);
-						norm = norm - (double)largest(p_optimalDistances.get(i));
-						if (norm > maxNorm)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;
-						}
-						else if (norm == maxNorm && comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;	
-						}
-					}
-					break;
-				case 2: // norm-diff
-					int firstLargestDist = 0;
-					int secondLargestDist = -1;
-					mi = p_pairs.get(0).i;
-					mj = p_pairs.get(0).j;
-					for (int i = 0; i < p_optimalDistances.get(0).length; i++)
-					{
-						int tdist = p_optimalDistances.get(0)[i];
-						p_optimalBase = p_optimalBases.get(0);
-						p_newDist = p_optimalDistances.get(0);
-						if (tdist > firstLargestDist)
-						{
-							secondLargestDist = firstLargestDist;
-							firstLargestDist = tdist;
-						}
-					}
-
-					maxNorm = Math.pow(euclideanNorm(p_optimalDistances.get(0)), 2);
-					maxNorm = maxNorm - (double)(firstLargestDist - secondLargestDist);
-					for (int i = 1; i < p_optimalDistances.size(); i++)
-					{
-						double norm = Math.pow(euclideanNorm(p_optimalDistances.get(i)), 2);
-						norm = norm - (double)(firstLargestDist - secondLargestDist);
-						if (norm > maxNorm)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;
-						}
-						else if (norm == maxNorm && comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;	
-						}
-					}
-					break;
-				case 3: // random
-					Random rng = new Random(System.currentTimeMillis());
-					int i = rng.nextInt(p_optimalDistances.size());
-					p_optimalBase = p_optimalBases.get(i);
-					p_newDist = p_optimalDistances.get(i);
-					mi = p_pairs.get(i).i;
-					mj = p_pairs.get(i).j;
-					break;
-				default: // just pick the first one
-					p_optimalBase = p_optimalBases.get(0);
-					p_newDist = p_optimalDistances.get(0);
-					break;
-			}
-
-			// return new BasePair(optimalBase, new Pair(mi, mj));
-			BasePair newBase = new BasePair(p_optimalBase, p_newDist, new Pair(mi, mj));
-			// disp("OPTIMAL BASE");
-			// disp(p_optimalBase);
-			// disp("TRYING TO APPEND WITH i = " + p_i);
-			p_base.appendRow(newBase.base);
-
-			// Insert the new line
-			String c1 = newBase.p.i < nVars ? "x" : "t";
-			String c2 = newBase.p.j < nVars ? "x" : "t";
-			p_slp.add("t_" + p_i + " = " + c1 + newBase.p.i + " XOR " + c2 + newBase.p.j);
-			p_xorCount++;
-			for (int f = 0; f < m.getDimension(); f++)
-			{
-				if (areEqual(newBase.base, m.getRow(f)))
-				{
-					p_slp.add("y_" + f + " = " + "t_" + p_i);
-				}
-			}
-			p_i++;
-
-			// Update variables for the next round...
-			p_n = p_base.getDimension(); // each row is a base...
-			// disp("UPDATED P_N: " + p_n);
-			// BasePair newBase = pickBase(base, m, dist, tieBreaker);
-			p_d = sum(p_dist);
-			p_optimalBase = null;
-			p_optimalBase = new int[p_base.getLength()]; // was dimension
-			p_optimalBases = null;
-			p_optimalBases = new ArrayList<int[]>();
-			p_optimalDistances = null;
-			p_optimalDistances = new ArrayList<int[]>();
-			p_pairs = null;
-			p_pairs = new ArrayList<Pair>();
-
-			for (int k = 0; k < p_newDist.length; k++)
-			{
-				p_dist[k] = p_newDist[k];
-			}
-			// disp("NEW BASE: ");
-			// disp(p_dist);
-		}
-
-		return new SLP(p_slp, p_xorCount, 0); // no ANDs required
-	}
-
-	private static class SolutionCircuit
-	{
-		public int d = Integer.MAX_VALUE;
-		public ArrayList<int[]> optimalBases = new ArrayList<int[]>();
-		public ArrayList<int[]> optimalDistances = new ArrayList<int[]>();
-		public ArrayList<Pair> pairs = new ArrayList<Pair>();
-
-		public void reset()
-		{
-			d = Integer.MAX_VALUE;
-			optimalBases = new ArrayList<int[]>();
-			optimalDistances = new ArrayList<int[]>();
-			pairs = new ArrayList<Pair>();
-		}
-
-		public synchronized void record(int t_d, ArrayList<int[]> t_optimalBases, ArrayList<int[]> t_optimalDistances, ArrayList<Pair> t_pairs)
-		{
-			if (t_d < d)
-			{
-				this.d = t_d;
-				this.optimalBases = t_optimalBases;
-				this.optimalDistances = t_optimalDistances;
-				this.pairs = t_pairs;
-			}
-			else if (t_d == d) // add to the existing solution set...
-			{
-				for (int[] b : t_optimalBases)
-				{
-					this.optimalBases.add(b);
-				}
-				for (int[] d : t_optimalDistances)
-				{
-					this.optimalDistances.add(d);
-				}
-				for (Pair p : t_pairs)
-				{
-					this.pairs.add(p);
-				}
-			}
-		}
-	}
-
-//	static int p_xorCount = 0;
-//	static int[] p_dist;
-//	static ArrayList<String> p_slp;
-//	static Matrix p_base;
-//	static int p_n;
-//	static int[] p_newDist;
-//	static int p_i;
-//	static int p_ii;
-//	static int p_jj;
-//	static int p_d;
-//	static int[] p_optimalBase;
-//	static ArrayList<int[]> p_optimalBases;
-//	static ArrayList<int[]> p_optimalDistances;
-//	static ArrayList<Pair> p_pairs;
-
-	private static SolutionCircuit solutionCircuit = new SolutionCircuit();
-	public static SLP parallelPeraltaOptimize_v2(final Matrix m, final int r, final int c, final int tieBreaker) throws Exception
-	{
-		p_xorCount = 0;
-		solutionCircuit.reset();
-		p_dist = null;
-		p_slp = null;
-		p_base = null;
-		p_n = 0;
-		p_newDist = null;
-		p_optimalBases = null;
-		p_optimalDistances = null;
-		p_pairs = null;
-
-		p_slp = new ArrayList<String>();
-		// Create the initial base
-		int[][] b = new int[c][c];
-		for (int i = 0; i < c; i++)
-		{
-			for (int j = 0; j < c; j++)
-			{
-				if (i == j)
-				{
-					b[i][j] = 1;
-				}
-			}
-		}
-		p_base = new Matrix(b, c);
-		
-		// Initialize the distance array and then get the ball rolling
-		p_dist = computeDistance(p_base, m);
-		for (int f = 0; f < p_dist.length; f++)
-		{
-			if (p_dist[f] == 0)
-			{
-				int[] row = m.getRow(f);
-				for (int cc = 0; cc < row.length; cc++)
-				{
-					if (row[cc] == 1)
-					{
-						p_slp.add("y_" + f + " = " + "x_" + cc);
-					}
-				}
-			}
-		}
-		p_newDist = new int[m.getDimension()];
-		p_i = m.getLength();
-		final int nVars = m.getLength();
-
-		p_n = p_base.getDimension(); // each row is a base...
-		p_d = sum(p_dist);
-		p_optimalBase = new int[p_base.getLength()]; // was dimension
-		p_optimalBases = new ArrayList<int[]>();
-		p_optimalDistances = new ArrayList<int[]>();
-		p_pairs = new ArrayList<Pair>();
-
-		// disp("Entering: " + p_n);
-
-		// Create the parallel team so everything isn't anonymous
-		ParallelTeam team = new ParallelTeam();
-
-		while (isZero(p_dist) == false)
-		{
-			// disp("Here: " + p_n);
-			// error("Another go round");
-			team.execute(new ParallelRegion() // linear combinations get computed in parallel - but can we push parallelism to the outer loop?
-			{
-				public void run() throws Exception // There are many, many combinations (potentially...)
-				{
-					execute (0, p_n - 1, new IntegerForLoop()
-					{
-						int t_d = p_d;
-						ArrayList<int[]> t_optimalBases = new ArrayList<int[]>();
-						ArrayList<int[]> t_optimalDistances = new ArrayList<int[]>();
-						ArrayList<Pair> t_pairs = new ArrayList<Pair>();
-
-						public IntegerSchedule schedule()
-						{
-							return IntegerSchedule.guided();
-						}
-
-						public void run (int first, int last) throws Exception
-						{
-							for (int t_ii = first; t_ii <= last; t_ii++)
-							{
-								for (int t_jj = t_ii + 1; t_jj < p_n; t_jj++)
-								{
-									if (t_ii != t_jj)
-									{
-										// t_newDist = new int[m.getDimension()];
-
-										int[] ssum = addMod(p_base.getRow(t_ii), p_base.getRow(t_jj), 2);
-										if (!(p_base.containsRow(ssum)) && !isZero(ssum))
-										{												
-											// int[] innersum = addMod(p_base.getRow(t_ii), p_base.getRow(t_jj), 2);
-											// // Matrix newBase = p_base.copy();
-											// // newBase.appendRow(innersum);
-											// for (int k = 0; k < last; k++)
-											// {
-											// 	int[] t_fi = m.getRow(k);
-											// 	// p_newDist[k] = optimizedPeraltaDistance(newBase, t_fi);
-											// 	t_newDist[k] = optimizedPeraltaDistance(p_base, innersum, t_fi, p_dist[k]);
-											// }
-											int[] t_newDist = optimizedComputeDistance(p_base, m, ssum, p_dist);
-											int newDistSum = sum(t_newDist);
-											// disp("Sum for " + t_ii + "," + t_jj + " = " + newDistSum);
-											if (newDistSum < t_d)
-											{
-												t_d = newDistSum;
-												t_optimalBases = new ArrayList<int[]>();
-												t_optimalDistances = new ArrayList<int[]>();
-												t_pairs = new ArrayList<Pair>();
-												t_optimalBases.add(ssum);
-												t_optimalDistances.add(t_newDist);
-												t_pairs.add(new Pair(t_ii, t_jj));
-											}
-											else if (newDistSum == t_d)
-											{
-												t_optimalBases.add(ssum);
-												t_optimalDistances.add(t_newDist);
-												t_pairs.add(new Pair(t_ii, t_jj));
-											}
-											ssum = null;
-										}	
-									}
-								}
-							}
-						}
-
-						public void finish() throws Exception
-						{
-							if (t_d < p_d)
-							{
-								solutionCircuit.record(t_d, t_optimalBases, t_optimalDistances, t_pairs);
-							}
-						}
-					});
-				}
-			});
-	
-			// Copy over the solution...
-			p_d = solutionCircuit.d;	
-			p_optimalBases = solutionCircuit.optimalBases;
-			p_optimalDistances = solutionCircuit.optimalDistances;
-			p_pairs = solutionCircuit.pairs;
-	
-			// disp("Executing the barrier action for tie breaking and round updates");
-			// Resolve using norms...
-			int mi = 0;
-			int mj = 0;
-			double maxNorm = Double.MAX_VALUE;
-			switch (tieBreaker)
-			{
-				case 0: // norm
-					maxNorm = euclideanNorm(p_optimalDistances.get(0));
-					p_optimalBase = p_optimalBases.get(0);
-					p_newDist = p_optimalDistances.get(0);
-					mi = p_pairs.get(0).i;
-					mj = p_pairs.get(0).j;
-					for (int i = 1; i < p_optimalDistances.size(); i++)
-					{
-						double norm = euclideanNorm(p_optimalDistances.get(i));
-						if (norm > maxNorm)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;
-						}
-						else if (norm == maxNorm && comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;	
-						}
-					}
-					break;
-				case 1: // norm-largest
-					int largestDist = largest(p_optimalDistances.get(0));
-					// for (int i = 0; i < p_optimalDistances.get(0).length; i++)
-					// {
-					// 	int tdist = p_optimalDistances.get(0)[i];
-					// 	largestDist = tdist > largestDist ? tdist : largestDist;
-					p_optimalBase = p_optimalBases.get(0);
-					p_newDist = p_optimalDistances.get(0);
-					mi = p_pairs.get(0).i;
-					mj = p_pairs.get(0).j;
-					// }
-					maxNorm = Math.pow(euclideanNorm(p_optimalDistances.get(0)), 2);
-					maxNorm = maxNorm - (double)largestDist;
-					for (int i = 1; i < p_optimalDistances.size(); i++)
-					{
-						double norm = Math.pow(euclideanNorm(p_optimalDistances.get(i)), 2);
-						norm = norm - (double)largest(p_optimalDistances.get(i));
-						if (norm > maxNorm)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;
-						}
-						else if (norm == maxNorm && comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;	
-						}
-					}
-					break;
-				case 2: // norm-diff
-					int firstLargestDist = 0;
-					int secondLargestDist = -1;
-					mi = p_pairs.get(0).i;
-					mj = p_pairs.get(0).j;
-					for (int i = 0; i < p_optimalDistances.get(0).length; i++)
-					{
-						int tdist = p_optimalDistances.get(0)[i];
-						p_optimalBase = p_optimalBases.get(0);
-						p_newDist = p_optimalDistances.get(0);
-						if (tdist >= firstLargestDist)
-						{
-							secondLargestDist = firstLargestDist;
-							firstLargestDist = tdist;
-						}
-					}
-
-					maxNorm = Math.pow(euclideanNorm(p_optimalDistances.get(0)), 2);
-					maxNorm = maxNorm - (double)(firstLargestDist - secondLargestDist);
-					for (int i = 1; i < p_optimalDistances.size(); i++)
-					{
-						double norm = Math.pow(euclideanNorm(p_optimalDistances.get(i)), 2);
-						norm = norm - (double)(firstLargestDist - secondLargestDist);
-						if (norm > maxNorm)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;
-						}
-						else if (norm == maxNorm && comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
-						{
-							maxNorm = norm;
-							p_optimalBase = p_optimalBases.get(i);
-							p_newDist = p_optimalDistances.get(i);
-							mi = p_pairs.get(i).i;
-							mj = p_pairs.get(i).j;	
-						}
-					}
-					break;
-				case 3: // random
-					Random rng = new Random(System.currentTimeMillis());
-					int i = rng.nextInt(p_optimalDistances.size());
-					p_optimalBase = p_optimalBases.get(i);
-					p_newDist = p_optimalDistances.get(i);
-					mi = p_pairs.get(i).i;
-					mj = p_pairs.get(i).j;
-					break;
-				default: // just pick the first one
-					p_optimalBase = p_optimalBases.get(0);
-					p_newDist = p_optimalDistances.get(0);
-					break;
-			}
-
-			// disp("picked " + mi + " " + mj + ": " + maxNorm);
-
-			// return new BasePair(optimalBase, new Pair(mi, mj));
-			BasePair newBase = new BasePair(p_optimalBase, p_newDist, new Pair(mi, mj));
-			// disp("OPTIMAL BASE");
-			// disp(p_optimalBase);
-			// disp("TRYING TO APPEND WITH i = " + p_i);
-			p_base.appendRow(newBase.base);
-
-			// Insert the new line
-			String c1 = newBase.p.i < nVars ? "x" : "t";
-			String c2 = newBase.p.j < nVars ? "x" : "t";
-			p_slp.add("t_" + p_i + " = " + c1 + newBase.p.i + " XOR " + c2 + newBase.p.j);
-			p_xorCount++;
-			for (int f = 0; f < m.getDimension(); f++)
-			{
-				if (areEqual(newBase.base, m.getRow(f)))
-				{
-					p_slp.add("y_" + f + " = " + "t_" + p_i);
-				}
-			}
-			p_i++;
-
-			// Update variables for the next round...
-			p_n = p_base.getDimension(); // each row is a base...
-			// disp("UPDATED P_N: " + p_n);
-			// BasePair newBase = pickBase(base, m, dist, tieBreaker);
-			p_d = sum(p_dist);
-			p_optimalBase = null;
-			p_optimalBase = new int[p_base.getLength()]; // was dimension
-			p_optimalBases = null;
-			p_optimalBases = new ArrayList<int[]>();
-			p_optimalDistances = null;
-			p_optimalDistances = new ArrayList<int[]>();
-			p_pairs = null;
-			p_pairs = new ArrayList<Pair>();
-
-			for (int k = 0; k < p_newDist.length; k++)
-			{
-				p_dist[k] = p_newDist[k];
-			}
-			// disp("NEW BASE: ");
-			// disp(p_dist);
-		}
-
-		return new SLP(p_slp, p_xorCount, 0); // no ANDs required
-	}
-
 	public static ArrayList<MatrixState> exhaustiveOptimize(Matrix currMatrix, int oldi, int oldj, int n, int lastcol) throws Exception
 	{
 		ArrayList<MatrixState> history = new ArrayList<MatrixState>();
@@ -1810,9 +1140,9 @@ public class MatrixOptimize
 		ArrayList<String> slp = new ArrayList<String>();
 
 		Matrix full = history.get(history.size() - 1).matrix;
-		int cutoff = full.getLength();
+		int cutoff = full.getDimension();
 		// int vars = cutoff + history.size() - 1;
-		// Matrix opt = full.subMatrix(cutoff);
+		Matrix opt = full.subMatrix(cutoff);
 
 		// Compute the new variables...
 		for (int i = history.size() - 1; i > 0; i--)
@@ -1883,52 +1213,6 @@ public class MatrixOptimize
 
 	public static void test() throws Exception
 	{
-		// disp("STARTING PAAR TEST");
-		// // int[][] test = {{1,1,0,1,1,1,0,0},{0,1,1,1,1,1,1,0},{0,1,0,1,1,1,0,0},{1,1,0,1,1,0,1,0},{1,0,0,1,0,0,1,0},{1,1,0,1,1,0,1,0},{1,1,0,1,1,0,0,0},{1,1,1,1,1,1,1,1}};
-		// int[][] test = {{1,0,0,0,1},{0,1,1,0,1},{0,1,0,1,0},{0,1,1,0,1},{0,0,1,1,1}};
-		// Matrix m = new Matrix(test, 5);
-		// disp(m.toString());
-		// ArrayList<MatrixState> history = paarOptimize(m, 5); // 5x5 matrix at this point...
-		// disp("" + history.size());
-		// disp(history.get(history.size() - 1).matrix.toString());
-		// disp("Number of gates: " + numGates(5, history));
-
-		// disp("STARTING CSE TEST");
-		// int[][] test2 = {{1,1,0,1,1,1,0,0},{0,1,1,1,1,1,1,0},{0,1,0,1,1,1,0,0},{1,1,0,1,1,0,1,0},{1,0,0,1,0,0,1,0},{1,1,0,1,1,0,1,0},{1,1,0,1,1,0,0,0},{1,1,1,1,1,1,1,1}};
-		// Matrix m2 = new Matrix(test2, 8);
-		// disp(m2.toString());
-		// ArrayList<MatrixState> history2 = cseOptimize(m2, 8);
-		// disp("Number of gates: " + numGates(8, history2));
-
-		disp("STARTING EXHAUSTIVE TEST");
-		// int[][] test3 = {{1,0,0,0,1},{0,1,1,0,1},{0,1,0,1,0},{0,1,1,0,1},{0,0,1,1,1}};
-		int[][] test3 = {{1,1,1,0,0},{0,1,0,1,1},{1,0,1,1,1},{0,1,1,1,0},{1,1,0,1,0},{0,1,1,1,1}};
-		Matrix m3 = new Matrix(test3, 6);
-		disp(m3.toString());
-		// long start = System.currentTimeMillis();
-		// ArrayList<MatrixState> history3 = exhaustiveOptimize(m3, 0, 0, 5, 4); // 5x5 matrix at this point...
-		ArrayList<MatrixState> history3 = paarOptimize(m3, 5); 
-		// long end = System.currentTimeMillis();
-		// ArrayList<MatrixState> history3 = exhaustiveOptimize(m3, 0, 0, 5, 4); // 5x5 matrix at this point...
-		disp("" + history3.size());
-		disp("" + history3.get(history3.size() - 1).matrix.getGateCount());
-		disp(history3.get(history3.size() - 1).matrix.toString());
-		// disp("" + (end - start) + " ms");
-		// buildSLP(history3);
-
-		// disp("STARTING EXHAUSTIVE TEST");
-		// int[][] test3 = {{1,1,1,1},{1,0,1,1},{1,1,1,0},{1,0,0,1}};
-		// Matrix m3 = new Matrix(test3, 4);
-		// disp(m3.toString());
-		// ArrayList<MatrixState> history3 = exhaustiveOptimize(m3, 0, 0, 4, 3, new ArrayList<Pair>()); // 5x5 matrix at this point...
-		// disp("" + history3.size());
-		// disp(history3.get(history3.size() - 1).matrix.toString());
-		// for (int i = 0; i < history3.size(); i++)
-		// {
-		// 	disp("Pair: " + history3.get(i).i + " " + history3.get(i).j);
-		// }
-		// disp("Number of gates: " + numGates(4, history3));
-
 		disp("STARTING PERALTA TEST");
 		int[][] test4 = {{1,1,1,0,0},{0,1,0,1,1},{1,0,1,1,1},{0,1,1,1,0},{1,1,0,1,0},{0,1,1,1,1}};
 		Matrix m4 = new Matrix(test4, 5);
@@ -1936,27 +1220,16 @@ public class MatrixOptimize
 		SLP slp4 = peraltaOptimize(m4, 6, 5, 0);
 		// SLP slp4 = parallelPeraltaOptimize(m4, 6, 5, 0);
 		dispStrings(slp4.lines);
-		long start = System.currentTimeMillis();
-		SLP slp5 = parallelPeraltaOptimize(m4, 6, 5, 0);
-		long end = System.currentTimeMillis();
-		disp("" + (end - start));
-		dispStrings(slp5.lines);
-		start = System.currentTimeMillis();
-		SLP slp6 = parallelPeraltaOptimize_v2(m4, 6, 5, 0);
-		end = System.currentTimeMillis();
-		disp("" + (end - start));
-		dispStrings(slp6.lines);
-
-		// disp("Number of gates: " + numGates(5, history4));
-
-		// disp("STARTING BERNSTEIN TEST");
-		// int[][] test5 = {{1,1,1,1},{1,0,1,1},{1,1,1,0},{1,0,0,1}}; // tags make up the last column, for easy purposes
-		// // int[][] test5 = {{1,0,1},{1,1,1},{0,0,1}};
-		// // Matrix m5 = new Matrix(test5, 4);
-		// Matrix m5 = new Matrix(test5, 3);
-		// disp(m5.toString());
-		// ArrayList<String> slp = bernsteinOptimize(m5.getVectors(), 4, 4, 4);
-		// // ArrayList<MatrixState> history5 = bernsteinOptimize(m5.getVectors(), 3, 3, 3);
+		// long start = System.currentTimeMillis();
+		// SLP slp5 = parallelPeraltaOptimize(m4, 6, 5, 0);
+		// long end = System.currentTimeMillis();
+		// disp("" + (end - start));
+		// dispStrings(slp5.lines);
+		// start = System.currentTimeMillis();
+		// SLP slp6 = parallelPeraltaOptimize_v2(m4, 6, 5, 0);
+		// end = System.currentTimeMillis();
+		// disp("" + (end - start));
+		// dispStrings(slp6.lines);
 	}
 
 	public static ArrayList<Matrix> buildMatrices(String file) throws Exception
@@ -2002,7 +1275,7 @@ public class MatrixOptimize
 			tgc = numGates(m.getDimension(), history);
 			gc = tgc < gc ? tgc : gc;
 			// disp("Number of gates: " + numGates(m.getDimension(), history));
-			// if (debug) dispStrings(buildSLP(history, m.getLength()));
+			if (debug) dispStrings(buildSLP(history, m.getLength()));
 
 			// disp("STARTING PAAR PSEUDO-EXHAUSTIVE TEST");
 			// ArrayList<MatrixState> history1 = paarOptimizeExhaustive(m, m.getLength(), 0, 0, m.getLength() - 1); // 5x5 matrix at this point...
@@ -2015,7 +1288,7 @@ public class MatrixOptimize
 			// dispStrings(buildSLP(history3));
 
 			error("STARTING PERALTA TEST - TIE 0");
-			SLP slp4 = parallelPeraltaOptimize_v2(m, m.getDimension(), m.getLength(), 0);
+			SLP slp4 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0);
 			tgc = slp4.xc;
 			gc = tgc < gc ? tgc : gc;
 			// error("Number of gates: " + slp4.xc);
@@ -2057,7 +1330,6 @@ public class MatrixOptimize
 
 	public static void main(String[] args) throws Exception
 	{
-		Comm.init(args); // PJ job queue initialization...
 		if (args.length == 0)
 		{
 			test(); // just run the hard-coded test cases
