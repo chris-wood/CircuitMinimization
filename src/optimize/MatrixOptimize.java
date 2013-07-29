@@ -186,6 +186,13 @@ public class MatrixOptimize
 		return nx;
 	}
 
+	public static int[] FLIP(int[] x, int i) throws Exception
+	{
+		if (i < 0 || i >= nx.length) throw new Exception("Invalid index into the vector.");
+		x[i] = x[i] == 1 ? 0 : 1; // flip
+		return x;
+	}
+
 	public static ArrayList<MatrixState> paarOptimize(Matrix currMatrix, int n) throws Exception
 	{
 		ArrayList<MatrixState> history = new ArrayList<MatrixState>();
@@ -654,6 +661,22 @@ public class MatrixOptimize
 	public static int hamiltonPeraltaDistance(Matrix base, int[] f, int od) throws Exception
 	{
 		// TODO: this is a replacement for reachable() - see below.		
+		// walk all binary sequences with weight od - 1
+		// use the sequence as an index into the base whcih to XOR, and stop once the target f is found
+
+		// alg idea: start with a MAX binary sequence
+		// let k = 3 and n = 5, then max = [1,1,1,0,0]
+		// have two indices i first nonzero, j = first zero
+
+		// walkthrough
+		// MAX = 11100
+		// 1) put all nonzero indexes in one set, put all zero indexes in another set
+		// 2) for each pair of indexes i/j 
+
+		// for each index i in set1
+		// 	for each index j in set2
+		// 	  compute XOR of the function and then see if we have a match
+
 
 		return 0;
 	}
