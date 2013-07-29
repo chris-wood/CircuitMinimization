@@ -673,10 +673,17 @@ public class MatrixOptimize
 		// 1) put all nonzero indexes in one set, put all zero indexes in another set
 		// 2) for each pair of indexes i/j 
 
+		// visitedSet = []
 		// for each index i in set1
 		// 	for each index j in set2
 		// 	  compute XOR of the function and then see if we have a match
 
+		// entry: nz = -1, z = -1
+		// 1110, nz = 0, z = 3
+		// 0111, nz = 1, z = 0
+		// 1011, nz = 0, z = 1 (discard, we've seen 
+		//       nz = 2, z = 1
+		// 0111 (seen this pair)
 
 		return 0;
 	}
