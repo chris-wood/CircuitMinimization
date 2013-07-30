@@ -1,0 +1,3 @@
+1. Move all util functions into separate class
+2. Separate linear optimize functions into separate classes, each with its own main and configureable output (decide on an interface to adhere to)
+3. Use http://commons.apache.org/proper/commons-cli/ CLI to help make it easier to run each optimization function
