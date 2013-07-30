@@ -1,3 +1,5 @@
+package caw.circuits.optimize.linear;
+
 import java.util.ArrayList;
 
 public class Matrix 

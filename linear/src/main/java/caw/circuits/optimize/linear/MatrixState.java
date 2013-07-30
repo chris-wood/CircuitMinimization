@@ -1,3 +1,5 @@
+package caw.circuits.optimize.linear;
+
 public class MatrixState
 {
 	public Matrix matrix; // just a 1 or 0 in each spot...

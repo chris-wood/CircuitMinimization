@@ -1,3 +1,5 @@
+package caw.circuits.optimize.linear;
+
 public class Pair
 {
 	public int i;

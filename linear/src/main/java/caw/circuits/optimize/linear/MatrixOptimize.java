@@ -1,3 +1,5 @@
+package caw.circuits.optimize.linear;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
