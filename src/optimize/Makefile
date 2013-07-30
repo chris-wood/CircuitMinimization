@@ -1,3 +1,6 @@
+matrix: 
+	javac MatrixOptimize.java
+
 linear:
 	javac -classpath .:pj.jar MatrixOptimize.java Matrix.java MatrixState.java Pair.java Vector.java BasePair.java SLP.java MatrixOptimizeExperiment.java
 

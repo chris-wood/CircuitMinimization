@@ -188,9 +188,16 @@ public class MatrixOptimize
 
 	public static int[] FLIP(int[] x, int i) throws Exception
 	{
-		if (i < 0 || i >= nx.length) throw new Exception("Invalid index into the vector.");
+		if (i < 0 || i >= x.length) throw new Exception("Invalid index into the vector.");
 		x[i] = x[i] == 1 ? 0 : 1; // flip
 		return x;
+	}
+
+	public static int[] CLONE(int[] x)
+	{
+		int[] nx = new int[x.length];
+		for (int i = 0; i < x.length; i++) nx[i] = x[i];
+		return nx;
 	}
 
 	public static ArrayList<MatrixState> paarOptimize(Matrix currMatrix, int n) throws Exception
@@ -657,7 +664,7 @@ public class MatrixOptimize
 		// return d.get();
 	}
 
-	// use the fact that traversing all n-bit binary strings of weight OD actually walks a hamiltonian cycle
+	// use the fact that traversing all n-bit binary strings of weight OD actually walks hamiltonian cycle
 	public static int hamiltonPeraltaDistance(Matrix base, int[] f, int od) throws Exception
 	{
 		// TODO: this is a replacement for reachable() - see below.		
@@ -685,7 +692,75 @@ public class MatrixOptimize
 		//       nz = 2, z = 1
 		// 0111 (seen this pair)
 
+		// Make the max configuration from which we start our graph traversal
+		ArrayList<int[]> visited = new ArrayList<int[]>();
+		int[] max = new int[base.getDimension()];
+		for (int i = 0; i < od; i++)
+		{
+			max[i] = 1;
+		}
+
+			
+
 		return 0;
+	}
+
+	public static ArrayList<Vector> walkWeightedSequences(int n, int k) throws Exception
+	{
+		//ArrayList<Integer> nz = findNonzeros(seq);
+		//ArrayList<Integer> z = findZeros(seq);
+		//ArrayList<Integer> seqs = new ArrayList<Integer>();
+		ArrayList<Vector> visited = new ArrayList<Vector>();
+		ArrayList<int[]> queue = new ArrayList<int[]>();
+	
+		// Build the max node (root)
+		int[] max = new int[n];
+		for (int i = 0; i < k; i++) max[i] = 1;
+		queue.add(max);
+
+		// Walk..
+		while (queue.size() > 0)
+		{
+			int[] seq = queue.remove(0); // pop out the first one...
+			ArrayList<Integer> nz = findNonzeros(seq);
+			ArrayList<Integer> z = findZeros(seq);
+			for (int i = 0; i < nz.size(); i++)
+			{
+				for (int j = 0; j < z.size(); j++)
+				{
+					int[] mod = CLONE(seq);
+					mod = FLIP(FLIP(mod, nz.get(i)), z.get(j)); // flip both spots (keeps the same weight but produces a new vector)
+					Vector v = new Vector(mod);
+					if (!(visited.contains(v)))
+					{
+						visited.add(v);
+						queue.add(mod);
+						//walkWeightedSequences(mod, visited); // depth first traversal of the graph
+					}
+				}
+			}
+		}
+		return visited;
+	}
+
+	public static ArrayList<Integer> findNonzeros(int[] x)
+	{
+		ArrayList<Integer> nz = new ArrayList<Integer>();
+		for (int i = 0; i < x.length; i++)
+		{
+			if (x[i] != 0) nz.add(i);
+		}	
+		return nz;
+	}
+
+	public static ArrayList<Integer> findZeros(int[] x)
+	{
+		ArrayList<Integer> z = new ArrayList<Integer>();
+		for (int i = 0; i < x.length; i++)
+		{
+			if (x[i] == 0) z.add(i);
+		}
+		return z;
 	}
 
 	public static int optimizedPeraltaDistance(Matrix base, int[] newBase, int[] f, int od) throws Exception
@@ -1243,13 +1318,13 @@ public class MatrixOptimize
 
 	public static void test() throws Exception
 	{
-		disp("STARTING PERALTA TEST");
-		int[][] test4 = {{1,1,1,0,0},{0,1,0,1,1},{1,0,1,1,1},{0,1,1,1,0},{1,1,0,1,0},{0,1,1,1,1}};
-		Matrix m4 = new Matrix(test4, 5);
-		disp(m4.toString());
-		SLP slp4 = peraltaOptimize(m4, 6, 5, 0);
+		// disp("STARTING PERALTA TEST");
+		// int[][] test4 = {{1,1,1,0,0},{0,1,0,1,1},{1,0,1,1,1},{0,1,1,1,0},{1,1,0,1,0},{0,1,1,1,1}};
+		// Matrix m4 = new Matrix(test4, 5);
+		// disp(m4.toString());
+		// SLP slp4 = peraltaOptimize(m4, 6, 5, 0);
 		// SLP slp4 = parallelPeraltaOptimize(m4, 6, 5, 0);
-		dispStrings(slp4.lines);
+		// dispStrings(slp4.lines);
 		// long start = System.currentTimeMillis();
 		// SLP slp5 = parallelPeraltaOptimize(m4, 6, 5, 0);
 		// long end = System.currentTimeMillis();
@@ -1260,6 +1335,24 @@ public class MatrixOptimize
 		// end = System.currentTimeMillis();
 		// disp("" + (end - start));
 		// dispStrings(slp6.lines);
+
+		Vector v1 = new Vector(new int[] {1,1,0,0});
+		Vector v2 = new Vector(new int[] {1,1,0,0});
+		Vector v3 = new Vector(new int[] {0,0,0,0});
+		disp("" + v1.equals(v2));
+		disp("" + v1.equals(v3));
+
+//		ArrayList<Vector> seqs = new ArrayList<Vector>();
+//		int[] max = {1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+		int n = 20;
+		int k = 5;
+		disp("Finding sequences for: " + n + "," + k);
+		ArrayList<Vector> seqs = walkWeightedSequences(n, k); 
+		disp("Result");
+		for (Vector s : seqs)
+		{
+			disp(s.row);
+		}
 	}
 
 	public static ArrayList<Matrix> buildMatrices(String file) throws Exception
