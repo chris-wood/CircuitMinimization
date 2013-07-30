@@ -247,6 +247,19 @@ public class Matrix
 		}
 	}
 
+	public int[] xorRows(int[] rowIndices) throws Exception
+	{
+		int[] result = new int[c];
+		for (int i = 0; i < rowIndices.length; i++)
+		{
+			if (rowIndices[i] != 0)
+			{
+				result = MatrixOptimize.XOR(result, this.getRow(i));
+			}
+		}
+		return result;
+	}
+
 	public void setEntry(int i, int j, int v) throws Exception
 	{
 		if ((i < 0 || i >= r) || (j < 0 || j >= c))

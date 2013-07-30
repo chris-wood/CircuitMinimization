@@ -838,7 +838,47 @@ public class MatrixOptimize
 		return distance;
 	}
 
-	public static BasePair pickBase(Matrix base, Matrix m, int[] dist, int tieBreaker) throws Exception
+	public static int[] computeDistanceGraphWalk(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
+	{
+		int n = m.getDimension();
+		int[] distance = new int[n];
+		for (int i = 0; i < n; i++)
+		{
+			int[] fi = m.getRow(i);
+			ArrayList<Vector> indices = walkWeightedSequences(base.getDimension(), dist[i] - 1);
+			boolean found = false;
+			for (int j = 0; j < base.getDimension(); j++)
+			{
+				if (areEqual(base.getRow(j), fi))
+				{
+					distance[i] = 0;
+				}
+			}
+			if (areEqual(newBase, fi))
+			{
+				distance[i] = 0;
+			}
+			else
+			{
+				for (Vector v : indices)
+				{
+					int[] collapsed = XOR(newBase, base.xorRows(v.row));
+					if (areEqual(collapsed, fi))
+					{
+						distance[i] = dist[i] - 1;
+						found = true;
+					}
+				}
+				if (!found)
+				{
+					distance[i] = dist[i];
+				}
+			}
+		}
+		return distance;
+	}
+
+	public static BasePair pickBase(Matrix base, Matrix m, int[] dist, int tieBreaker, int distanceMethod) throws Exception
 	{
 		int n = base.getDimension(); // each row is a base...
 		int d = sum(dist);
@@ -855,15 +895,18 @@ public class MatrixOptimize
 				if (i != j)
 				{
 					int[] sum = addMod(base.getRow(i), base.getRow(j), 2);
-					// Reduce modulo 2
-					// int[] sum = add(base.getRow(i), base.getRow(j));
-					// for (int k = 0; k < sum.length; k++) sum[k] = sum[k] % 2;
-
 					if (!(base.containsRow(sum)) && !isZero(sum)) // bases can't be zero and we don't repeat bases
 					{
-						// Matrix newBase = base.copy();
-						// newBase.appendRow(sum);
-						int[] newDist = optimizedComputeDistance(base, m, sum, dist);
+						int[] newDist = null;
+						switch (distanceMethod)
+						{
+							case 1: 
+								newDist = computeDistanceGraphWalk(base, m, sum, dist);
+								break;
+							default: // bank on recursive method
+								newDist = optimizedComputeDistance(base, m, sum, dist);
+								break;
+						}
 						int newDistSum = sum(newDist);
 						if (newDistSum < d)
 						{
@@ -1014,7 +1057,7 @@ public class MatrixOptimize
 		return new BasePair(optimalBase, optimalDist, new Pair(mi, mj));
 	}
 
-	public static SLP peraltaOptimize(Matrix m, int r, int c, int tieBreaker) throws Exception
+	public static SLP peraltaOptimize(Matrix m, int r, int c, int tieBreaker, int distanceMethod) throws Exception
 	{
 		ArrayList<String> slp = new ArrayList<String>();
 
@@ -1053,7 +1096,7 @@ public class MatrixOptimize
 		int xorCount = 0;
 		while (isZero(dist) == false)
 		{
-			BasePair newBase = pickBase(base, m, dist, tieBreaker);
+			BasePair newBase = pickBase(base, m, dist, tieBreaker, distanceMethod);
 			base.appendRow(newBase.base);
 
 			// Insert the new line
@@ -1392,13 +1435,13 @@ public class MatrixOptimize
 			int gc = Integer.MAX_VALUE;
 			int tgc = 0;
 
-			error(m.toString());
-			error("STARTING PAAR TEST");
-			ArrayList<MatrixState> history = paarOptimize(m, m.getLength()); 
-			tgc = numGates(m.getDimension(), history);
-			gc = tgc < gc ? tgc : gc;
-			// disp("Number of gates: " + numGates(m.getDimension(), history));
-			if (debug) dispStrings(buildSLP(history, m.getLength()));
+			// error(m.toString());
+			// error("STARTING PAAR TEST");
+			// ArrayList<MatrixState> history = paarOptimize(m, m.getLength()); 
+			// tgc = numGates(m.getDimension(), history);
+			// gc = tgc < gc ? tgc : gc;
+			// // disp("Number of gates: " + numGates(m.getDimension(), history));
+			// if (debug) dispStrings(buildSLP(history, m.getLength()));
 
 			// disp("STARTING PAAR PSEUDO-EXHAUSTIVE TEST");
 			// ArrayList<MatrixState> history1 = paarOptimizeExhaustive(m, m.getLength(), 0, 0, m.getLength() - 1); // 5x5 matrix at this point...
@@ -1410,12 +1453,25 @@ public class MatrixOptimize
 			// disp("Number of gates: " + numGates(m.getDimension(), history3));
 			// dispStrings(buildSLP(history3));
 
-			error("STARTING PERALTA TEST - TIE 0");
-			SLP slp4 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0);
+			error("STARTING PERALTA TEST - TIE 0, RECURSIVE DISTANCE");
+			long start4 = System.currentTimeMillis();
+			SLP slp4 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0, 0);
+			long end4 = System.currentTimeMillis();
 			tgc = slp4.xc;
 			gc = tgc < gc ? tgc : gc;
 			// error("Number of gates: " + slp4.xc);
 			if (debug) dispStrings(slp4.lines);
+			error("Elapsed time: " + (end4 - start4));
+
+			error("STARTING PERALTA TEST - TIE 0, GRAPH DISTANCE");
+			long start5 = System.currentTimeMillis();
+			SLP slp5 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0, 1);
+			long end5 = System.currentTimeMillis();
+			tgc = slp5.xc;
+			gc = tgc < gc ? tgc : gc;
+			// error("Number of gates: " + slp4.xc);
+			error("Elapsed time: " + (end5 - start5));
+			if (debug) dispStrings(slp5.lines);
 
 			// error("STARTING PERALTA TEST - TIE 1");
 			// slp4 = parallelPeraltaOptimize_v2(m, m.getDimension(), m.getLength(), 1);
