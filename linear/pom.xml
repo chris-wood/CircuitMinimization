@@ -26,18 +26,46 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-          <configuration>
-            <archive>
-              <manifest>
-                <addClasspath>true</addClasspath>
+        <groupId>org.dstovall</groupId>
+        <artifactId>onejar-maven-plugin</artifactId>
+        <version>1.4.4</version>
+        <executions>
+          <execution>
+            <id>matrix-optimize</id>
+              <configuration>
                 <mainClass>caw.circuits.optimize.linear.MatrixOptimize</mainClass>
-              </manifest>
-           </archive>
-         </configuration>
-      </plugin>
-    </plugins>
-</build>
+                <attachToBuild>true</attachToBuild>
+                <classifier>onejar</classifier>
+                <filename>MatrixOptimize.jar</filename>
+              </configuration>
+              <goals>
+                <goal>one-jar</goal>
+              </goals>
+            </execution>
+          <execution>
+            <id>test-binary-search</id>
+              <configuration>
+                <mainClass>caw.circuits.optimize.linear.TestBinarySearch</mainClass>
+                <attachToBuild>true</attachToBuild>
+                <classifier>onejar</classifier>
+                <filename>TestBinarySearch.jar</filename>
+              </configuration>
+              <goals>
+                <goal>one-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
+
+    <pluginRepositories>
+      <pluginRepository>
+         <id>onejar-maven-plugin.googlecode.com</id>
+         <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+      </pluginRepository>
+    </pluginRepositories>
+
+
 
 </project>
