@@ -62,14 +62,20 @@ public class TestBinarySearch
 			long end4 = System.currentTimeMillis();
 			System.err.println("Elapsed time: " + (end4 - start4));
 
-			System.err.println("STARTING PERALTA HEURISTIC TEST - TIE 0, GRAPH DISTANCE");
+			System.err.println("STARTING PERALTA HEURISTIC TEST - TIE 0, GRAPH DISTANCE WITH BIT ARRAYS");
 			long start5 = System.currentTimeMillis();
 			SLP slp5 = MatrixOptimize.peraltaOptimize(sample, sample.getDimension(), sample.getLength(), 0, 1);
 			long end5 = System.currentTimeMillis();
 			System.err.println("Elapsed time: " + (end5 - start5));
 
+			// System.err.println("STARTING PERALTA HEURISTIC TEST - TIE 0, GRAPH DISTANCE WITH UNSIGNED INTEGERS");
+			// long start6 = System.currentTimeMillis();
+			// SLP slp6 = MatrixOptimize.peraltaOptimize(sample, sample.getDimension(), sample.getLength(), 0, 2);
+			// long end6 = System.currentTimeMillis();
+			// System.err.println("Elapsed time: " + (end6 - start6));
+
 			// Make sure we actually have the same result for both
-			if (!(slp4.equals(slp4)))
+			if (!(slp4.equals(slp5)))
 			{
 				System.err.println("SLPs did not match. Terminating.");
 				System.exit(-1);

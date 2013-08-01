@@ -1,7 +1,10 @@
 package caw.circuits.optimize.linear;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Deque;
 import java.util.ArrayDeque;
@@ -385,9 +388,6 @@ public class MatrixOptimize
 
 	public static ArrayList<Vector> walkWeightedSequences(int n, int k) throws Exception
 	{
-		//ArrayList<Integer> nz = findNonzeros(seq);
-		//ArrayList<Integer> z = findZeros(seq);
-		//ArrayList<Integer> seqs = new ArrayList<Integer>();
 		ArrayList<Vector> visited = new ArrayList<Vector>();
 		ArrayList<int[]> queue = new ArrayList<int[]>();
 	
@@ -396,10 +396,10 @@ public class MatrixOptimize
 		for (int i = 0; i < k; i++) max[i] = 1;
 		queue.add(max);
 
-		// Walk..
+		// Walk...
 		while (queue.size() > 0)
 		{
-			int[] seq = queue.remove(0); // pop out the first one...
+			int[] seq = queue.remove(0); // pop 
 			ArrayList<Integer> nz = findNonzeros(seq);
 			ArrayList<Integer> z = findZeros(seq);
 			for (int i = 0; i < nz.size(); i++)
@@ -407,19 +407,225 @@ public class MatrixOptimize
 				for (int j = 0; j < z.size(); j++)
 				{
 					int[] mod = CLONE(seq);
-					mod = FLIP(FLIP(mod, nz.get(i)), z.get(j)); // flip both spots (keeps the same weight but produces a new vector)
+					mod = FLIP(FLIP(mod, nz.get(i)), z.get(j)); 
 					Vector v = new Vector(mod);
 					if (!(visited.contains(v)))
 					{
 						visited.add(v);
 						queue.add(mod);
-						//walkWeightedSequences(mod, visited); // depth first traversal of the graph
 					}
 				}
 			}
 		}
 		return visited;
 	}
+
+	public static int walkWeightedSequencesAndCheck(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	{
+		//ArrayList<Integer> nz = findNonzeros(seq);
+		//ArrayList<Integer> z = findZeros(seq);
+		//ArrayList<Integer> seqs = new ArrayList<Integer>();
+		ArrayList<Vector> visited = new ArrayList<Vector>();
+		ArrayList<int[]> queue = new ArrayList<int[]>();
+		ArrayList<Integer> starts = new ArrayList<Integer>();
+		ArrayList<Integer> ends = new ArrayList<Integer>();
+	
+		// Build the max node (root)
+		int[] max = new int[n];
+		for (int i = 0; i < k; i++) max[i] = 1;
+		queue.add(max);
+
+		// Walk the tree...
+		boolean firstRun = true;
+		while (queue.size() > 0)
+		{
+			int[] seq = queue.remove(0); // pop out the first one...
+			int start = firstRun ? -1 : starts.remove(0);
+			int end = firstRun ? -1 : ends.remove(0);
+			// ArrayList<Integer> nz = findNonzeros(seq);
+			// if (starts.size() > 0)
+			// {
+			// 	int start = (int)starts.remove(0).intValue();
+			// 	// disp("Removing nonzeros before " + start);
+			// 	while (nz.size() > 0 && nz.get(0) < start) // drop
+			// 	{
+			// 		nz.remove(0);
+			// 	}
+			// }
+			// ArrayList<Integer> z = findZeros(seq);
+			// if (ends.size() > 0)
+			// {
+			// 	int end = (int)ends.remove(0).intValue();
+			// 	// disp("Removing nonzeros before " + start);
+			// 	while (z.size() > 0 && z.get(0) < end) // drop
+			// 	{
+			// 		z.remove(0);
+			// 	}	
+			// }
+			for (int i = 0; i < n; i++)
+			{
+				if (seq[i] == 1 && (i > start || start == -1))
+				{
+					for (int j = 0; j < n; j++)
+					{
+						if (i != j && seq[j] == 0 && (j > end || end == -1))
+						{
+							// int[] mod = CLONE(seq);
+							// mod = FLIP(FLIP(mod, i), j); // flip both spots (keeps the same weight but produces a new vector)
+							Vector v = new Vector(seq);
+							v.row[i] = v.row[i] == 0 ? 1 : 0;
+							v.row[j] = v.row[j] == 0 ? 1 : 0;
+							
+							if (!(visited.contains(v))) // this won't happen with pruning... right?
+							{
+								// firstRun = false;
+								starts.add(i);
+								ends.add(j);
+								visited.add(v);
+								queue.add(v.row);
+
+								// Check to see if we have a match...
+								if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
+								{
+									return k;
+								}
+
+								//walkWeightedSequences(mod, visited); // depth first traversal of the graph
+							}
+
+							// Flip back
+							// seq[i] = seq[i] == 0 ? 1 : 0;
+							// seq[j] = seq[j] == 0 ? 1 : 0;
+						}
+					}
+				}
+			}
+		}
+
+		return k + 1;
+	}
+
+	public static int walkWeightedSequencesAndCheck_v2(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	{
+		LinkedList<Integer> queue = new LinkedList<Integer>();
+		HashSet<Integer> visited = new HashSet<Integer>();
+
+		String ms = "";
+		for (int i = 0; i < k; i++) ms = ms + "1";
+		for (int i = k; i < n; i++) ms = ms + "0";
+		queue.add(Integer.parseInt(ms, 2));
+
+		while (queue.size() > 0)
+		{
+			int seq = queue.removeFirst(); // pop
+			for (int i = 0; i < n; i++)
+			{ 
+				if ((seq & (1 << i)) > 0) // ones
+				{
+					for (int j = 0; j < n; j++)
+					{
+						if ((seq & (1 << j)) == 0) // zeros
+						{
+							// int mod = seq.flipBit(i).flipBit(j);
+							// if (!(visited.contains(mod)))
+							int mod = ((seq ^ (1 << i)) ^ (1 << j));
+							if (!(visited.contains(mod)))
+							{
+								visited.add(mod);
+								queue.addLast(mod);
+
+								// Check to see if we have a match...
+								if (areEqual(XOR(newBase, base.xorRows(mod)), f))
+								{
+									return k;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return k + 1;
+	}
+
+	// public static int walkWeightedSequencesAndCheck_v2(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	// {
+	// 	//ArrayList<Integer> nz = findNonzeros(seq);
+	// 	//ArrayList<Integer> z = findZeros(seq);
+	// 	//ArrayList<Integer> seqs = new ArrayList<Integer>();
+	// 	ArrayList<BigInteger> visited = new ArrayList<BigInteger>();
+	// 	ArrayList<BigInteger> queue = new ArrayList<BigInteger>();
+	// 	ArrayList<Integer> starts = new ArrayList<Integer>();
+	// 	ArrayList<Integer> ends = new ArrayList<Integer>();
+	
+	// 	// Build the max node (root)
+	// 	String ms = "";
+	// 	for (int i = 0; i < k; i++) ms = ms + "1";
+	// 	for (int i = k; i < n; i++) ms = ms + "0";
+	// 	queue.add(new BigInteger(ms, 2));
+
+	// 	// Walk the tree...
+	// 	boolean firstRun = true;
+	// 	while (queue.size() > 0)
+	// 	{
+	// 		BigInteger seq = queue.remove(0); // pop
+	// 		int start = firstRun ? -1 : starts.remove(0);
+	// 		int end = firstRun ? -1 : ends.remove(0);
+	// 		// ArrayList<Integer> nz = findNonzeros(seq);
+	// 		// if (starts.size() > 0)
+	// 		// {
+	// 		// 	int start = (int)starts.remove(0).intValue();
+	// 		// 	// disp("Removing nonzeros before " + start);
+	// 		// 	while (nz.size() > 0 && nz.get(0) < start) // drop
+	// 		// 	{
+	// 		// 		nz.remove(0);
+	// 		// 	}
+	// 		// }
+	// 		// ArrayList<Integer> z = findZeros(seq);
+	// 		// if (ends.size() > 0)
+	// 		// {
+	// 		// 	int end = (int)ends.remove(0).intValue();
+	// 		// 	// disp("Removing nonzeros before " + start);
+	// 		// 	while (z.size() > 0 && z.get(0) < end) // drop
+	// 		// 	{
+	// 		// 		z.remove(0);
+	// 		// 	}	
+	// 		// }
+	// 		for (int i = 0; i < n; i++)
+	// 		{
+	// 			if (seq.testBit(i) && (i > start || start == -1)) // one
+	// 			{
+	// 				for (int j = 0; j < n; j++)
+	// 				{
+	// 					if (i != j && seq.testBit(j) == false && (j > end || end == -1)) // zero
+	// 					{
+	// 						BigInteger mod = seq.flipBit(i).flipBit(j);
+	// 						if (!(visited.contains(mod)))
+	// 						{
+	// 							// firstRun = false;
+	// 							starts.add(i);
+	// 							ends.add(j);
+	// 							visited.add(mod);
+	// 							queue.add(mod);
+
+	// 							// Check to see if we have a match...
+	// 							int[] collapsed = XOR(newBase, base.xorRows(mod));
+	// 							if (areEqual(collapsed, f))
+	// 							{
+	// 								return k;
+	// 							}
+
+	// 							//walkWeightedSequences(mod, visited); // depth first traversal of the graph
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 	return k + 1;
+	// }
 
 	public static ArrayList<Integer> findNonzeros(int[] x)
 	{
@@ -523,7 +729,6 @@ public class MatrixOptimize
 		for (int i = 0; i < n; i++)
 		{
 			int[] fi = m.getRow(i);
-			ArrayList<Vector> indices = walkWeightedSequences(base.getDimension(), dist[i] - 1);
 			boolean found = false;
 			for (int j = 0; j < base.getDimension(); j++)
 			{
@@ -538,19 +743,23 @@ public class MatrixOptimize
 			}
 			else
 			{
-				for (Vector v : indices)
-				{
-					int[] collapsed = XOR(newBase, base.xorRows(v.row));
-					if (areEqual(collapsed, fi))
-					{
-						distance[i] = dist[i] - 1;
-						found = true;
-					}
-				}
-				if (!found)
-				{
-					distance[i] = dist[i];
-				}
+				// distance[i] =  walkWeightedSequencesAndCheck(base.getDimension(), dist[i] - 1, base, fi, newBase);
+				distance[i] =  walkWeightedSequencesAndCheck_v2(base.getDimension(), dist[i] - 1, base, fi, newBase);
+
+
+				// for (Vector v : indices)
+				// {
+				// 	int[] collapsed = XOR(newBase, base.xorRows(v.row));
+				// 	if (areEqual(collapsed, fi))
+				// 	{
+				// 		distance[i] = dist[i] - 1;
+				// 		found = true;
+				// 	}
+				// }
+				// if (!found)
+				// {
+				// 	distance[i] = dist[i];
+				// }
 			}
 		}
 		return distance;
@@ -1065,10 +1274,12 @@ public class MatrixOptimize
 
 //		ArrayList<Vector> seqs = new ArrayList<Vector>();
 //		int[] max = {1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-		int n = 20;
-		int k = 5;
+		int n = 5;
+		int k = 3;
 		disp("Finding sequences for: " + n + "," + k);
 		ArrayList<Vector> seqs = walkWeightedSequences(n, k); 
+		disp("Finding sequences for: " + n + "," + k + " with BigIntegers");
+		// ArrayList<BigInteger> ints = walkWeightedSequences_v2(n, k); 
 		disp("Result");
 		for (Vector s : seqs)
 		{
@@ -1121,16 +1332,6 @@ public class MatrixOptimize
 			// // disp("Number of gates: " + numGates(m.getDimension(), history));
 			// if (debug) dispStrings(buildSLP(history, m.getLength()));
 
-			// disp("STARTING PAAR PSEUDO-EXHAUSTIVE TEST");
-			// ArrayList<MatrixState> history1 = paarOptimizeExhaustive(m, m.getLength(), 0, 0, m.getLength() - 1); // 5x5 matrix at this point...
-			// disp("Number of gates: " + numGates(m.getDimension(), history1));
-			// dispStrings(buildSLP(history1));
-
-			// disp("STARTING EXHAUSTIVE FACTORIZATION TEST");
-			// ArrayList<MatrixState> history3 = exhaustiveOptimize(m, 0, 0, m.getLength(), m.getLength() - 1); // 5x5 matrix at this point...
-			// disp("Number of gates: " + numGates(m.getDimension(), history3));
-			// dispStrings(buildSLP(history3));
-
 			error("STARTING PERALTA TEST - TIE 0, RECURSIVE DISTANCE");
 			long start4 = System.currentTimeMillis();
 			SLP slp4 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0, 0);
@@ -1150,34 +1351,6 @@ public class MatrixOptimize
 			// error("Number of gates: " + slp4.xc);
 			error("Elapsed time: " + (end5 - start5));
 			if (debug) dispStrings(slp5.lines);
-
-			// error("STARTING PERALTA TEST - TIE 1");
-			// slp4 = parallelPeraltaOptimize_v2(m, m.getDimension(), m.getLength(), 1);
-			// tgc = slp4.xc;
-			// gc = tgc < gc ? tgc : gc;
-			// // error("Number of gates: " + slp4.xc);
-			// if (debug) dispStrings(slp4.lines);
-
-			// error("STARTING PERALTA TEST - TIE 2");
-			// slp4 = parallelPeraltaOptimize_v2(m, m.getDimension(), m.getLength(), 2);
-			// tgc = slp4.xc;
-			// gc = tgc < gc ? tgc : gc;
-			// // error("Number of gates: " + slp4.xc);
-			// if (debug) dispStrings(slp4.lines);
-
-			// error("STARTING PERALTA TEST - TIE 3");
-			// slp4 = parallelPeraltaOptimize_v2(m, m.getDimension(), m.getLength(), 3);
-			// tgc = slp4.xc;
-			// gc = tgc < gc ? tgc : gc;
-			// // disp("Number of gates: " + slp4.xc);
-			// if (debug) dispStrings(slp4.lines);
-
-			// error("STARTING BERNSTEIN TEST");
-			// ArrayList<String> slp5 = bernsteinOptimize(m.getVectors(), m.getLength(), m.getLength(), m.getDimension());
-			// tgc = slp5.size();
-			// gc = tgc < gc ? tgc : gc;
-			// // disp("Number of gates: " + slp5.size());
-			// if (debug) dispStrings(slp5);
 
 			total += gc;
 		}

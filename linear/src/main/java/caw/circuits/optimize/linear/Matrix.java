@@ -1,6 +1,7 @@
 package caw.circuits.optimize.linear;
 
 import java.util.ArrayList;
+import java.math.BigInteger;
 
 public class Matrix 
 {
@@ -255,6 +256,32 @@ public class Matrix
 		for (int i = 0; i < rowIndices.length; i++)
 		{
 			if (rowIndices[i] != 0)
+			{
+				result = MatrixOptimize.XOR(result, this.getRow(i));
+			}
+		}
+		return result;
+	}
+
+	public int[] xorRows(BigInteger indices) throws Exception
+	{
+		int[] result = new int[c];
+		for (int i = 0; i < r; i++)
+		{
+			if (indices.testBit(i))
+			{
+				result = MatrixOptimize.XOR(result, this.getRow(i));
+			}
+		}
+		return result;
+	}
+
+	public int[] xorRows(int indices) throws Exception
+	{
+		int[] result = new int[c];
+		for (int i = 0; i < r; i++)
+		{
+			if ((indices & (1 << i)) > 0)
 			{
 				result = MatrixOptimize.XOR(result, this.getRow(i));
 			}
