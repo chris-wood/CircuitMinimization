@@ -420,6 +420,150 @@ public class MatrixOptimize
 		return visited;
 	}
 
+// void HamiltonianPath(char direction, int n, int H, string pre, string post)
+	public enum WALK_DIR {LEFT, RIGHT};
+	public static String lastString;
+
+	// public static int[] APPEND(int[] l, int[] r)
+	// {
+	// 	int ii = 0;
+	// 	int[] x = new int[l.length + r.length];
+	// 	for (int i = 0; i < l.length; i++) x[ii] = l[ii++];
+	// 	for (int i = 0; i < r.length; i++) x[ii] = r[ii++];
+	// 	return x;
+	// }
+
+	// public static int[] APPEND(int[] l, int[] r, int bit)
+	// {
+	// 	int ii = 0;
+	// 	int[] x = new int[l.length + r.length + 1];
+	// 	for (int i = 0; i < l.length; i++) x[ii] = l[ii++];
+	// 	x[ii++] = bit;
+	// 	for (int i = 0; i < r.length; i++) x[ii] = r[ii++];
+	// 	return x;
+	// }
+
+	public static ArrayList<Vector> walkWeightedSequences_v2(WALK_DIR dir, int n, int k, String pre, String post) throws Exception
+	{
+		ArrayList<Vector> seqs = new ArrayList<Vector>();
+		if (n == 1)
+		{
+			String bit = k == 0 ? "0" : "1";
+			String newSeq = pre + bit + post;
+			seqs.add(new Vector(newSeq));
+			lastString = newSeq;
+			return seqs;
+		}
+		else if (k == 0)
+		{
+			String tmp = pre;
+			for (int i = 0; i < n; i++) tmp = tmp + "0";
+			tmp = tmp + post;
+			seqs.add(new Vector(tmp));
+			lastString = tmp;
+			return seqs;
+		}
+		else if (k == n)
+		{
+			String tmp = pre;
+			for (int i = 0; i < n; i++) tmp = tmp + "1";
+			tmp = tmp + post;
+			seqs.add(new Vector(tmp));
+			lastString = tmp;
+			return seqs;
+		}
+		else if (dir == WALK_DIR.LEFT)
+		{
+			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k - 1, pre + "1", post));
+			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k, pre + "0", post));
+			return seqs;
+		}
+		else
+		{
+			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k - 1, pre + "1", post));
+			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k, pre + "0", post));
+			return seqs;
+		}
+	}
+
+	public static int walkWeightedSequencesAndCheckGraph(WALK_DIR dir, int n, int k, String pre, String post, Matrix base, int[] f, int[] newBase, int od) throws Exception
+	{
+		ArrayList<BitPair> pairs = new ArrayList<BitPair>();
+		String copyString = new String(lastString);
+		BitPair bp = new BitPair(n, k, pre, post, dir, copyString);
+		pairs.add(bp);
+
+		while (pairs.size() > 0)
+		{
+			BitPair pair = pairs.remove(0);
+			n = pair.n;
+			k = pair.k;
+			dir = pair.dir;
+			lastString = pair.ls;
+			if (n == 1)
+			{
+				String bit = k == 0 ? "0" : "1";
+				String newSeq = pre + bit + post;
+				// seqs.add(new Vector(newSeq));
+				Vector v = new Vector(newSeq);
+				if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
+				{
+					return od - 1;
+				}
+
+				lastString = newSeq;
+			}
+			else if (k == 0)
+			{
+				String tmp = pre;
+				for (int i = 0; i < n; i++) tmp = tmp + "0";
+				tmp = tmp + post;
+				// seqs.add(new Vector(tmp));
+				Vector v = new Vector(tmp);
+				if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
+				{
+					return od - 1;
+				}
+
+				lastString = tmp;
+			}
+			else if (k == n)
+			{
+				String tmp = pre;
+				for (int i = 0; i < n; i++) tmp = tmp + "1";
+				tmp = tmp + post;
+				// seqs.add(new Vector(tmp));
+				Vector v = new Vector(tmp);
+				if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
+				{
+					return od - 1;
+				}
+
+				lastString = tmp;
+			}
+			else if (dir == WALK_DIR.LEFT)
+			{
+				BitPair bp1 = new BitPair(n - 1, k - 1, pre + "1", post, WALK_DIR.RIGHT, pair.ls);
+				pairs.add(bp1);
+				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k - 1, pre + "1", post));
+				BitPair bp2 = new BitPair(n - 1, k, pre + "0", post, WALK_DIR.LEFT, pair.ls);
+				pairs.add(bp2);
+				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k, pre + "0", post));
+			}
+			else
+			{
+				BitPair bp1 = new BitPair(n - 1, k - 1, pre + "1", post, WALK_DIR.LEFT, pair.ls);
+				pairs.add(bp1);
+				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k - 1, pre + "1", post));
+				BitPair bp2 = new BitPair(n - 1, k, pre + "0", post, WALK_DIR.RIGHT, pair.ls);
+				pairs.add(bp2);
+				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k, pre + "0", post));
+			}
+		}
+
+		return od;
+	}
+
 	public static int walkWeightedSequencesAndCheck(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
 	{
 		//ArrayList<Integer> nz = findNonzeros(seq);
@@ -506,6 +650,50 @@ public class MatrixOptimize
 	}
 
 	public static int walkWeightedSequencesAndCheck_v2(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	{
+		LinkedList<Integer> queue = new LinkedList<Integer>();
+		HashSet<Integer> visited = new HashSet<Integer>();
+
+		String ms = "";
+		for (int i = 0; i < k; i++) ms = ms + "1";
+		for (int i = k; i < n; i++) ms = ms + "0";
+		queue.add(Integer.parseInt(ms, 2));
+
+		while (queue.size() > 0)
+		{
+			int seq = queue.removeFirst(); // pop
+			for (int i = 0; i < n; i++)
+			{ 
+				if ((seq & (1 << i)) > 0) // ones
+				{
+					for (int j = 0; j < n; j++)
+					{
+						if ((seq & (1 << j)) == 0) // zeros
+						{
+							// int mod = seq.flipBit(i).flipBit(j);
+							// if (!(visited.contains(mod)))
+							int mod = ((seq ^ (1 << i)) ^ (1 << j));
+							if (!(visited.contains(mod)))
+							{
+								visited.add(mod);
+								queue.addLast(mod);
+
+								// Check to see if we have a match...
+								if (areEqual(XOR(newBase, base.xorRows(mod)), f))
+								{
+									return k;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return k + 1;
+	}
+
+	public static int walkWeightedSequencesAndCheck_v3(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
 	{
 		LinkedList<Integer> queue = new LinkedList<Integer>();
 		HashSet<Integer> visited = new HashSet<Integer>();
@@ -729,7 +917,6 @@ public class MatrixOptimize
 		for (int i = 0; i < n; i++)
 		{
 			int[] fi = m.getRow(i);
-			boolean found = false;
 			for (int j = 0; j < base.getDimension(); j++)
 			{
 				if (areEqual(base.getRow(j), fi))
@@ -741,25 +928,30 @@ public class MatrixOptimize
 			{
 				distance[i] = 0;
 			}
+			else if (dist[i] == 2)
+			{
+				for (int j = 0; j < base.getDimension(); j++)
+				{
+					if (areEqual(XOR(newBase, base.getRow(j)), fi))
+					{
+						distance[i] = 0;
+					}
+				}
+			}
 			else
 			{
-				// distance[i] =  walkWeightedSequencesAndCheck(base.getDimension(), dist[i] - 1, base, fi, newBase);
-				distance[i] =  walkWeightedSequencesAndCheck_v2(base.getDimension(), dist[i] - 1, base, fi, newBase);
-
-
-				// for (Vector v : indices)
-				// {
-				// 	int[] collapsed = XOR(newBase, base.xorRows(v.row));
-				// 	if (areEqual(collapsed, fi))
-				// 	{
-				// 		distance[i] = dist[i] - 1;
-				// 		found = true;
-				// 	}
-				// }
-				// if (!found)
-				// {
-				// 	distance[i] = dist[i];
-				// }
+				lastString = "";
+				for (int j = 0; j < n; j++) lastString = lastString + "0";
+				ArrayList<Vector> seqs = walkWeightedSequences_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, "", "");
+				distance[i] = dist[i];
+				for (Vector seq : seqs)
+				{
+					if (areEqual(XOR(newBase, base.xorRows(seq.row)), fi))
+					{
+						distance[i] = dist[i] - 1;
+						break;
+					}	
+				}
 			}
 		}
 		return distance;
@@ -788,6 +980,7 @@ public class MatrixOptimize
 						switch (distanceMethod)
 						{
 							case 1: 
+								// newDist = computeDistanceGraphWalk(base, m, sum, dist);
 								newDist = computeDistanceGraphWalk(base, m, sum, dist);
 								break;
 							default: // bank on recursive method
@@ -795,6 +988,7 @@ public class MatrixOptimize
 								break;
 						}
 						int newDistSum = sum(newDist);
+						// disp("sum = " + newDistSum);
 						if (newDistSum < d)
 						{
 							d = newDistSum;
@@ -1274,17 +1468,32 @@ public class MatrixOptimize
 
 //		ArrayList<Vector> seqs = new ArrayList<Vector>();
 //		int[] max = {1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-		int n = 5;
-		int k = 3;
+		int n = 16;
+		int k = 5;
 		disp("Finding sequences for: " + n + "," + k);
+		long start = System.currentTimeMillis();
 		ArrayList<Vector> seqs = walkWeightedSequences(n, k); 
+		long end = System.currentTimeMillis();
 		disp("Finding sequences for: " + n + "," + k + " with BigIntegers");
 		// ArrayList<BigInteger> ints = walkWeightedSequences_v2(n, k); 
-		disp("Result");
+		disp("Result #1: " + (end - start) + "ms");
 		for (Vector s : seqs)
 		{
 			disp(s.row);
 		}
+
+		lastString = "";
+		for (int i = 0; i < n; i++) lastString = lastString + "0";
+		start = System.currentTimeMillis();
+		ArrayList<Vector> seqs2 = walkWeightedSequences_v2(WALK_DIR.RIGHT, n, k, "", "");
+		end = System.currentTimeMillis();
+		disp("Result #2: " + (end - start) + "ms");
+		for (Vector s : seqs)
+		{
+			disp(s.row);
+		}	
+
+		disp("" + (seqs.size() == seqs2.size()));
 	}
 
 	public static ArrayList<Matrix> buildMatrices(String file) throws Exception

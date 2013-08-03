@@ -75,7 +75,9 @@ public class TestBinarySearch
 			// System.err.println("Elapsed time: " + (end6 - start6));
 
 			// Make sure we actually have the same result for both
-			if (!(slp4.equals(slp5)))
+			System.out.println("Recursive: " + slp4.xc);
+			System.out.println("Graph: " + slp5.xc);
+			if (!(slp4.xc == slp5.xc))
 			{
 				System.err.println("SLPs did not match. Terminating.");
 				System.exit(-1);
