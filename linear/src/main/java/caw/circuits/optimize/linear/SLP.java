@@ -15,20 +15,35 @@ public class SLP
 		this.ac = ac;
 	}
 
-	public boolean equals(SLP other)
+	@Override
+	public boolean equals(Object o)
 	{
-		if (other.lines.size() != lines.size())
+		if (o instanceof SLP)
 		{
-			return false;
-		}
-		for (int i = 0; i < lines.size(); i++)
-		{
-			if (!(lines.get(i).equals(other.lines.get(i))))
+			SLP other = (SLP)o;
+			if (other.lines.size() != lines.size())
 			{
 				return false;
 			}
+			for (int i = 0; i < lines.size(); i++)
+			{
+				if (!(lines.get(i).equals(other.lines.get(i))))
+				{
+					return false;
+				}
+			}
+			return true;
 		}
-		return true;
+		else
+		{
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return lines.hashCode() + xc + ac;
 	}
 
 	@Override

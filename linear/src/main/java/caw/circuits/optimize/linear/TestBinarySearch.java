@@ -55,6 +55,55 @@ public class TestBinarySearch
 			Matrix sample = new Matrix(mat, m);
 			System.err.println("" + sample.toString());
 
+			// Testing against our original sequential code...
+			int[][] b = new int[m][m];
+			for (int i = 0; i < m; i++)
+			{
+				for (int j = 0; j < m; j++)
+				{
+					if (i == j)
+					{
+						b[i][j] = 1;
+					}
+				}
+			}
+			Matrix base = new Matrix(b);
+			int[] f = new int[m];
+			Random prng = new Random();
+			for (int i = 0; i < m; i++) f[i] = prng.nextInt(2); 
+			boolean unique = false;
+			while (!unique)
+			{
+				boolean match = false;
+				for (int row = 0; row < base.getDimension(); row++)
+				{
+					if (MatrixOptimize.areEqual(base.getRow(row), f))
+					{
+						match = true;
+						break;
+					}
+				}
+				if (match == false)
+				{
+					unique = true;
+				}
+				else
+				{
+					// repopulate the thing
+					for (int i = 0; i < m; i++) f[i] = prng.nextInt() % 2; 
+				}
+			}
+
+			System.out.println("Target:");
+			System.out.print("[ ");
+			for (int i = 0; i < m - 1; i++) System.out.print(f[i] + " ");
+			System.out.println(f[f.length - 1] + "]");
+
+			// compute the distances
+			System.out.println("Brute: " + MatrixOptimize.peraltaDistance(base, f));
+
+			// public static int peraltaDistance(final Matrix base, final int[] f)
+
 			// Run both distance computations
 			System.err.println("STARTING PERALTA HEURISTIC TEST - TIE 0, RECURSIVE DISTANCE");
 			long start4 = System.currentTimeMillis();
@@ -77,14 +126,19 @@ public class TestBinarySearch
 			// Make sure we actually have the same result for both
 			System.out.println("Recursive: " + slp4.xc);
 			System.out.println("Graph: " + slp5.xc);
-			if (!(slp4.xc == slp5.xc))
+			if (slp4.lines.equals(slp5.lines) == false)
 			{
 				System.err.println("SLPs did not match. Terminating.");
+				System.err.println("" + slp4.lines.size() + "," + slp5.lines.size());
+				System.err.println("SLP #1");
+				System.err.println(slp4.lines);
+				System.err.println("SLP #2");
+				System.err.println(slp5.lines);
 				System.exit(-1);
 			}
 
 			// Display results
-			System.out.println(n + "," + m + "," + (end4 - start4) + "," + (end5 - start5));
+			// System.out.println(n + "," + m + "," + (end4 - start4) + "," + (end5 - start5));
 		}
 	}
 }

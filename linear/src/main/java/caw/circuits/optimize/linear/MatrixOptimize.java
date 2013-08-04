@@ -423,6 +423,7 @@ public class MatrixOptimize
 // void HamiltonianPath(char direction, int n, int H, string pre, string post)
 	public enum WALK_DIR {LEFT, RIGHT};
 	public static String lastString;
+	public static HashMap<String, int[]> xorMap = new HashMap<String, int[]>();
 
 	// public static int[] APPEND(int[] l, int[] r)
 	// {
@@ -450,6 +451,7 @@ public class MatrixOptimize
 		{
 			String bit = k == 0 ? "0" : "1";
 			String newSeq = pre + bit + post;
+			System.out.println("seq: " + newSeq);
 			seqs.add(new Vector(newSeq));
 			lastString = newSeq;
 			return seqs;
@@ -459,6 +461,7 @@ public class MatrixOptimize
 			String tmp = pre;
 			for (int i = 0; i < n; i++) tmp = tmp + "0";
 			tmp = tmp + post;
+			System.out.println("seq: " + tmp);
 			seqs.add(new Vector(tmp));
 			lastString = tmp;
 			return seqs;
@@ -468,100 +471,107 @@ public class MatrixOptimize
 			String tmp = pre;
 			for (int i = 0; i < n; i++) tmp = tmp + "1";
 			tmp = tmp + post;
+			System.out.println("seq: " + tmp);
 			seqs.add(new Vector(tmp));
 			lastString = tmp;
 			return seqs;
 		}
 		else if (dir == WALK_DIR.LEFT)
 		{
+			System.out.println("left to right: " + n + " : " + k + " " + pre + " 1 " + post);
 			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k - 1, pre + "1", post));
+			System.out.println("left to left: " + n + " : " + k + " " + pre + " 0 " + post);
 			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k, pre + "0", post));
 			return seqs;
 		}
 		else
 		{
+			System.out.println("right to left: " + n + " : " + k + " " + pre + " 1 " + post);
 			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k - 1, pre + "1", post));
+			System.out.println("right to right: " + n + " : " + k + " " + pre + " 0 " + post);
 			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k, pre + "0", post));
 			return seqs;
 		}
 	}
 
-	public static int walkWeightedSequencesAndCheckGraph(WALK_DIR dir, int n, int k, String pre, String post, Matrix base, int[] f, int[] newBase, int od) throws Exception
+	// To avoid throwing stuff on the stack
+	public static int[] walk_ft;
+	public static int[] walk_newBase;
+	public static int walk_od;
+	public static Matrix walk_base;
+
+	public static int walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR dir, int n, 
+		int k, int bit, int[] acc) throws Exception
 	{
-		ArrayList<BitPair> pairs = new ArrayList<BitPair>();
-		String copyString = new String(lastString);
-		BitPair bp = new BitPair(n, k, pre, post, dir, copyString);
-		pairs.add(bp);
-
-		while (pairs.size() > 0)
+		if (n == 1)
 		{
-			BitPair pair = pairs.remove(0);
-			n = pair.n;
-			k = pair.k;
-			dir = pair.dir;
-			lastString = pair.ls;
-			if (n == 1)
-			{
-				String bit = k == 0 ? "0" : "1";
-				String newSeq = pre + bit + post;
-				// seqs.add(new Vector(newSeq));
-				Vector v = new Vector(newSeq);
-				if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
-				{
-					return od - 1;
-				}
-
-				lastString = newSeq;
+			int[] target = acc;
+			if (k == 1)
+			{	
+				target = XOR(walk_base.getRow(bit), acc);
 			}
-			else if (k == 0)
+			if (areEqual(XOR(walk_newBase, target), walk_ft))
 			{
-				String tmp = pre;
-				for (int i = 0; i < n; i++) tmp = tmp + "0";
-				tmp = tmp + post;
-				// seqs.add(new Vector(tmp));
-				Vector v = new Vector(tmp);
-				if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
-				{
-					return od - 1;
-				}
-
-				lastString = tmp;
-			}
-			else if (k == n)
-			{
-				String tmp = pre;
-				for (int i = 0; i < n; i++) tmp = tmp + "1";
-				tmp = tmp + post;
-				// seqs.add(new Vector(tmp));
-				Vector v = new Vector(tmp);
-				if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
-				{
-					return od - 1;
-				}
-
-				lastString = tmp;
-			}
-			else if (dir == WALK_DIR.LEFT)
-			{
-				BitPair bp1 = new BitPair(n - 1, k - 1, pre + "1", post, WALK_DIR.RIGHT, pair.ls);
-				pairs.add(bp1);
-				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k - 1, pre + "1", post));
-				BitPair bp2 = new BitPair(n - 1, k, pre + "0", post, WALK_DIR.LEFT, pair.ls);
-				pairs.add(bp2);
-				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k, pre + "0", post));
+				return walk_od;
 			}
 			else
 			{
-				BitPair bp1 = new BitPair(n - 1, k - 1, pre + "1", post, WALK_DIR.LEFT, pair.ls);
-				pairs.add(bp1);
-				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k - 1, pre + "1", post));
-				BitPair bp2 = new BitPair(n - 1, k, pre + "0", post, WALK_DIR.RIGHT, pair.ls);
-				pairs.add(bp2);
-				// seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k, pre + "0", post));
+				return walk_od + 1;	
 			}
 		}
-
-		return od;
+		else if (k == 0)
+		{
+			if (areEqual(XOR(walk_newBase, acc), walk_ft))
+			{
+				return walk_od;
+			}
+			else
+			{
+				return walk_od + 1;
+			}
+		}
+		else if (k == n)
+		{
+			int[] target = acc;
+			for (int i = bit; i < (n + bit); i++) 
+			{
+				target = XOR(target, walk_base.getRow(i));
+			}
+			if (areEqual(XOR(walk_newBase, target), walk_ft))
+			{
+				return walk_od;
+			}
+			else
+			{
+				return walk_od + 1;
+			}
+		}
+		else if (dir == WALK_DIR.LEFT)
+		{
+			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, n - 1, k - 1, bit + 1, 
+				XOR(acc, walk_base.getRow(bit))) == walk_od)
+			{
+				return walk_od;
+			}
+			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.LEFT, n - 1, k, bit + 1, acc) == walk_od)
+			{
+				return walk_od;
+			}
+			return walk_od + 1;
+		}
+		else
+		{
+			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.LEFT, n - 1, k - 1, bit + 1, 
+				XOR(walk_base.getRow(bit), acc)) == walk_od)
+			{
+				return walk_od;
+			}
+			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, n - 1, k, bit + 1, acc) == walk_od)
+			{
+				return walk_od;
+			}
+			return walk_od + 1;
+		}
 	}
 
 	public static int walkWeightedSequencesAndCheck(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
@@ -737,84 +747,6 @@ public class MatrixOptimize
 		return k + 1;
 	}
 
-	// public static int walkWeightedSequencesAndCheck_v2(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
-	// {
-	// 	//ArrayList<Integer> nz = findNonzeros(seq);
-	// 	//ArrayList<Integer> z = findZeros(seq);
-	// 	//ArrayList<Integer> seqs = new ArrayList<Integer>();
-	// 	ArrayList<BigInteger> visited = new ArrayList<BigInteger>();
-	// 	ArrayList<BigInteger> queue = new ArrayList<BigInteger>();
-	// 	ArrayList<Integer> starts = new ArrayList<Integer>();
-	// 	ArrayList<Integer> ends = new ArrayList<Integer>();
-	
-	// 	// Build the max node (root)
-	// 	String ms = "";
-	// 	for (int i = 0; i < k; i++) ms = ms + "1";
-	// 	for (int i = k; i < n; i++) ms = ms + "0";
-	// 	queue.add(new BigInteger(ms, 2));
-
-	// 	// Walk the tree...
-	// 	boolean firstRun = true;
-	// 	while (queue.size() > 0)
-	// 	{
-	// 		BigInteger seq = queue.remove(0); // pop
-	// 		int start = firstRun ? -1 : starts.remove(0);
-	// 		int end = firstRun ? -1 : ends.remove(0);
-	// 		// ArrayList<Integer> nz = findNonzeros(seq);
-	// 		// if (starts.size() > 0)
-	// 		// {
-	// 		// 	int start = (int)starts.remove(0).intValue();
-	// 		// 	// disp("Removing nonzeros before " + start);
-	// 		// 	while (nz.size() > 0 && nz.get(0) < start) // drop
-	// 		// 	{
-	// 		// 		nz.remove(0);
-	// 		// 	}
-	// 		// }
-	// 		// ArrayList<Integer> z = findZeros(seq);
-	// 		// if (ends.size() > 0)
-	// 		// {
-	// 		// 	int end = (int)ends.remove(0).intValue();
-	// 		// 	// disp("Removing nonzeros before " + start);
-	// 		// 	while (z.size() > 0 && z.get(0) < end) // drop
-	// 		// 	{
-	// 		// 		z.remove(0);
-	// 		// 	}	
-	// 		// }
-	// 		for (int i = 0; i < n; i++)
-	// 		{
-	// 			if (seq.testBit(i) && (i > start || start == -1)) // one
-	// 			{
-	// 				for (int j = 0; j < n; j++)
-	// 				{
-	// 					if (i != j && seq.testBit(j) == false && (j > end || end == -1)) // zero
-	// 					{
-	// 						BigInteger mod = seq.flipBit(i).flipBit(j);
-	// 						if (!(visited.contains(mod)))
-	// 						{
-	// 							// firstRun = false;
-	// 							starts.add(i);
-	// 							ends.add(j);
-	// 							visited.add(mod);
-	// 							queue.add(mod);
-
-	// 							// Check to see if we have a match...
-	// 							int[] collapsed = XOR(newBase, base.xorRows(mod));
-	// 							if (areEqual(collapsed, f))
-	// 							{
-	// 								return k;
-	// 							}
-
-	// 							//walkWeightedSequences(mod, visited); // depth first traversal of the graph
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// 	return k + 1;
-	// }
-
 	public static ArrayList<Integer> findNonzeros(int[] x)
 	{
 		ArrayList<Integer> nz = new ArrayList<Integer>();
@@ -917,40 +849,95 @@ public class MatrixOptimize
 		for (int i = 0; i < n; i++)
 		{
 			int[] fi = m.getRow(i);
+			boolean match = false;
 			for (int j = 0; j < base.getDimension(); j++)
 			{
 				if (areEqual(base.getRow(j), fi))
 				{
 					distance[i] = 0;
+					match = true;
 				}
 			}
-			if (areEqual(newBase, fi))
+			if (!match)
 			{
-				distance[i] = 0;
-			}
-			else if (dist[i] == 2)
-			{
-				for (int j = 0; j < base.getDimension(); j++)
+				if (areEqual(newBase, fi))
 				{
-					if (areEqual(XOR(newBase, base.getRow(j)), fi))
+					distance[i] = 0;
+				}
+
+
+
+				// }
+				// else if (dist[i] == 2)
+				// {
+				// 	for (int j = 0; j < base.getDimension(); j++)
+				// 	{
+				// 		if (areEqual(XOR(newBase, base.getRow(j)), fi))
+				// 		{
+				// 			distance[i] = 0;
+				// 		}
+				// 	}
+				// }
+
+
+
+				else
+				{
+					// lastString = "";
+					// int dt = dist[i];
+					// for (int j = 0; j < n; j++) lastString = lastString + "0";
+					// ArrayList<Vector> seqs = walkWeightedSequences_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i], "", "");
+					// distance[i] = dist[i];
+					// for (Vector seq : seqs)
+					// {
+					// 	if (areEqual(base.xorRows(seq.row), fi))
+					// 	{
+					// 		dt = dist[i] - 1;
+					// 		break;
+					// 	}	
+					// }
+					// seqs = walkWeightedSequences_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, "", "");
+					// for (Vector seq : seqs)
+					// {
+					// 	if (areEqual(XOR(newBase, base.xorRows(seq.row)), fi))
+					// 	{
+					// 		dt = dist[i] - 1;
+					// 		break;
+					// 	}	
+					// }
+
+					// prevIndices = null;
+					// prevXor = null;
+					
+					// int[] ft = new int[fi.length];
+					// for (int j = 0; j < ft.length; j++) ft[j] = 0;
+
+					// distance[i] = walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i], "", "", base, ft, fi, newBase, dist[i] - 1);
+					// if (distance[i] == dist[i])
 					{
-						distance[i] = 0;
+						// disp("retrying with base included");
+						// prevIndices = null;
+						// prevXor = null;
+						int[] ft1 = new int[fi.length];
+						for (int j = 0; j < ft1.length; j++) ft1[j] = 0;
+
+						walk_ft = fi;
+						walk_newBase = newBase;
+						walk_od = dist[i] - 1;
+						walk_base = base;
+
+						distance[i] = walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, 0, ft1);
 					}
-				}
-			}
-			else
-			{
-				lastString = "";
-				for (int j = 0; j < n; j++) lastString = lastString + "0";
-				ArrayList<Vector> seqs = walkWeightedSequences_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, "", "");
-				distance[i] = dist[i];
-				for (Vector seq : seqs)
-				{
-					if (areEqual(XOR(newBase, base.xorRows(seq.row)), fi))
+
+					if (distance[i] != optimizedPeraltaDistance(base, newBase, fi, dist[i]))
 					{
-						distance[i] = dist[i] - 1;
-						break;
-					}	
+						System.err.println("Error: distance computations don't line up!");
+						disp("Graph distance: " + distance[i]);
+						disp("Brute distance: " + optimizedPeraltaDistance(base, newBase, fi, dist[i]));
+						// disp("same graph way... not merged: " + dt);
+						System.exit(-1);
+					}
+					// System.exit(-1);
 				}
 			}
 		}
@@ -984,6 +971,7 @@ public class MatrixOptimize
 								newDist = computeDistanceGraphWalk(base, m, sum, dist);
 								break;
 							default: // bank on recursive method
+								// just FYI: sum is the new base
 								newDist = optimizedComputeDistance(base, m, sum, dist);
 								break;
 						}
@@ -1468,8 +1456,8 @@ public class MatrixOptimize
 
 //		ArrayList<Vector> seqs = new ArrayList<Vector>();
 //		int[] max = {1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-		int n = 16;
-		int k = 5;
+		int n = 5;
+		int k = 3;
 		disp("Finding sequences for: " + n + "," + k);
 		long start = System.currentTimeMillis();
 		ArrayList<Vector> seqs = walkWeightedSequences(n, k); 
