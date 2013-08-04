@@ -1,18 +1,30 @@
 package caw.circuits.optimize.linear;
 
 import java.util.Random;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import edu.rit.pj.IntegerForLoop;
+import edu.rit.pj.IntegerSchedule;
+import edu.rit.pj.ParallelRegion;
+import edu.rit.pj.ParallelTeam;
+import edu.rit.pj.reduction.SharedLong;
+import edu.rit.pj.reduction.SharedInteger;
+import edu.rit.pj.reduction.IntegerOp;
+import edu.rit.pj.Comm;
+import edu.rit.pj.BarrierAction;
 
 public class TestBinarySearch
 {
-	public static error(String s) { System.err.println(s); }
-	public static disp(String s) { System.out.println(s); }
+	public static void error(String s) { System.err.println(s); }
+	public static void disp(String s) { System.out.println(s); }
 
 	public static void main(String[] args) throws Exception
 	{
+		Comm.init(args);
+
 		if (args.length != 4 && args.length != 1)
 		{
-			error("usage: java TestBinarySearch n m trials bias");
+			error("usage: java TestBinarySearch [n m trials bias | filename]");
 			System.exit(-1);
 		}
 
@@ -74,38 +86,46 @@ public class TestBinarySearch
 				long end5 = System.currentTimeMillis();
 				error("Elapsed time: " + (end5 - start5));
 
+				error("STARTING PERALTA HEURISTIC TEST - TIE 0, PARALLEL RECURSIVE DISTANCE");
+				long start6 = System.currentTimeMillis();
+				SLP slp6 = ParallelMatrixOptimize.parallelPeraltaOptimize(sample, sample.getDimension(), sample.getLength(), 0);
+				long end6 = System.currentTimeMillis();
+
 				// Make sure we actually have the same result for both
-				disp("Recursive: " + slp4.xc);
-				disp("Graph: " + slp5.xc);
-				if (slp4.lines.equals(slp5.lines) == false)
+				error("Recursive: " + slp4.xc);
+				error("Graph: " + slp5.xc);
+				error("Parallel: " + slp6.xc);
+				if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false)
 				{
 					error("SLPs did not match. Terminating.");
 					error("" + slp4.lines.size() + "," + slp5.lines.size());
 					error("SLP #1");
-					error(slp4.lines);
+					error(slp4.lines.toString());
 					error("SLP #2");
-					error(slp5.lines);
+					error(slp5.lines.toString());
+					error("SLP #3");
+					error(slp6.lines.toString());
 					System.exit(-1);
 				}
 			}	
 		}
 		else
 		{
-			BufferedReader in = new BufferedReader(new FileReader(file)); 
+			BufferedReader in = new BufferedReader(new FileReader(args[0])); 
 			String line = "";
 			while ((line = in.readLine()) != null && !line.isEmpty())
 			{
-				String params = line.split(" ");
+				String[] params = line.split(" ");
 				int n = Integer.parseInt(params[0]);
 				int m = Integer.parseInt(params[1]);
 				int trials = Integer.parseInt(params[2]);
 				double bias = Double.parseDouble(params[3]);
 
 				// PRNG
-				Random r = new Random(System.currentTimeMillis(););
+				Random r = new Random(System.currentTimeMillis());
 				for (int t = 0; t < trials; t++)
 				{
-					try 
+					try
 					{
 						// Create the matrix
 						int[][] mat = new int[n][m];
@@ -128,8 +148,6 @@ public class TestBinarySearch
 						Matrix sample = new Matrix(mat, m);
 						error("" + sample.toString());
 
-						// public static int peraltaDistance(final Matrix base, final int[] f)
-
 						// Run both distance computations
 						error("STARTING PERALTA HEURISTIC TEST - TIE 0, RECURSIVE DISTANCE");
 						long start4 = System.currentTimeMillis();
@@ -143,18 +161,25 @@ public class TestBinarySearch
 						long end5 = System.currentTimeMillis();
 						error("Elapsed time: " + (end5 - start5));
 
-						// display the times in CSV format
-						disp(itr + "," + n + "," + m + "," + bias + "," + (end4 - start4) + "," + (end5 - start5));
+						error("STARTING PERALTA HEURISTIC TEST - TIE 0, PARALLEL RECURSIVE DISTANCE");
+						long start6 = System.currentTimeMillis();
+						SLP slp6 = ParallelMatrixOptimize.parallelPeraltaOptimize(sample, sample.getDimension(), sample.getLength(), 0);
+						long end6 = System.currentTimeMillis();
 
 						// Make sure we actually have the same result for both
-						if (slp4.lines.equals(slp5.lines) == false)
+						error("Recursive: " + slp4.xc);
+						error("Graph: " + slp5.xc);
+						error("Parallel: " + slp6.xc);
+						if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false)
 						{
 							error("SLPs did not match. Terminating.");
 							error("" + slp4.lines.size() + "," + slp5.lines.size());
 							error("SLP #1");
-							error(slp4.lines);
+							error(slp4.lines.toString());
 							error("SLP #2");
-							error(slp5.lines);
+							error(slp5.lines.toString());
+							error("SLP #3");
+							error(slp6.lines.toString());
 							System.exit(-1);
 						}
 					}

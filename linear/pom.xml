@@ -21,6 +21,13 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>edu.rit.pj</groupId>
+      <artifactId>pj</artifactId>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/pj.jar</systemPath>
+    </dependency>
   </dependencies>
 
   <build>
@@ -32,40 +39,38 @@
         <executions>
           <execution>
             <id>matrix-optimize</id>
-              <configuration>
-                <mainClass>caw.circuits.optimize.linear.MatrixOptimize</mainClass>
-                <attachToBuild>true</attachToBuild>
-                <classifier>onejar</classifier>
-                <filename>MatrixOptimize.jar</filename>
-              </configuration>
-              <goals>
-                <goal>one-jar</goal>
-              </goals>
-            </execution>
-          <execution>
-            <id>test-binary-search</id>
-              <configuration>
-                <mainClass>caw.circuits.optimize.linear.TestBinarySearch</mainClass>
-                <attachToBuild>true</attachToBuild>
-                <classifier>onejar</classifier>
-                <filename>TestBinarySearch.jar</filename>
-              </configuration>
-              <goals>
-                <goal>one-jar</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </build>
+            <configuration>
+              <mainClass>caw.circuits.optimize.linear.MatrixOptimize</mainClass>
+              <attachToBuild>true</attachToBuild>
+              <classifier>onejar</classifier>
+              <filename>MatrixOptimize.jar</filename>
+            </configuration>
+            <goals>
+              <goal>one-jar</goal>
+            </goals>
+          </execution>
+        <execution>
+          <id>test-binary-search</id>
+            <configuration>
+              <mainClass>caw.circuits.optimize.linear.TestBinarySearch</mainClass>
+              <attachToBuild>true</attachToBuild>
+              <classifier>onejar</classifier>
+              <filename>TestBinarySearch.jar</filename>
+            </configuration>
+            <goals>
+              <goal>one-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
-    <pluginRepositories>
-      <pluginRepository>
-         <id>onejar-maven-plugin.googlecode.com</id>
-         <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-      </pluginRepository>
-    </pluginRepositories>
-
-
+  <pluginRepositories>
+    <pluginRepository>
+       <id>onejar-maven-plugin.googlecode.com</id>
+       <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+    </pluginRepository>
+  </pluginRepositories>
 
 </project>
