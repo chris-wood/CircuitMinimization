@@ -170,6 +170,7 @@ public class TestBinarySearch
 						error("Recursive: " + slp4.xc);
 						error("Graph: " + slp5.xc);
 						error("Parallel: " + slp6.xc);
+						disp(t + "," + n + "," + m + "," + bias + "," + (end4 - start4) + "," + (end5 - start5) + "," + (end6 - start6));
 						if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false)
 						{
 							error("SLPs did not match. Terminating.");
