@@ -881,25 +881,7 @@ public class MatrixOptimize
 
 	public static int[] compute_distance_target_split(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
 	{
-		// TODO
 
-		// Input target T is each row of m (the set of targets)
-		// k value is the corresponding index in the distance array
-
-		// compute the distance as follows:
-		// 1. split the rows of m into two lists 
-		// 2. guess a and b (# elements from first half and second half, resp) such that a+b = k and a,b <= k
-		// 3. With hamiltonian path method, commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
-		// 4. invoke heuristic with T, A and B
-
-		// the heuristic(T, A, B) works as follows:
-		// 1. Iniitlaize array for T with 0 elements (unchosen)
-		// 2. for each unchosen index i
-		// 3. split A and B into two lists each (A0/A1 and B0/B1)
-		// 4. set u = T[i]
-		// 5. set pickedPositions(T,i) = 1 (set ith bit as chosen)
-		// 6. if (u == 0) recursively solve (T, A0, B0) and (T, A1, B1), else solve (T, A0, B1) and (T, A1, B0)
-		// ... this splits all the way down to single-element lists, which become the elements alpha and beta that are sought after
 	}
 
 	public static BasePair pickBase(Matrix base, Matrix m, int[] dist, int tieBreaker, int distanceMethod) throws Exception
