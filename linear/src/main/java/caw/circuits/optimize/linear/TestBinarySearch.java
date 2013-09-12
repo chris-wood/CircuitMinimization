@@ -90,11 +90,16 @@ public class TestBinarySearch
 				long start6 = System.currentTimeMillis();
 				SLP slp6 = ParallelMatrixOptimize.parallelPeraltaOptimize(sample, sample.getDimension(), sample.getLength(), 0);
 				long end6 = System.currentTimeMillis();
+				error("Elapsed time: " + (end6 - start6));
 
 				// Make sure we actually have the same result for both
 				error("Recursive: " + slp4.xc);
+				error(end4 - start4 + "ms");
 				error("Graph: " + slp5.xc);
+				error(end5 - start5 + "ms");
+				// error("GRAPH NUMTRIES: " + MatrixOptimize.numTries);
 				error("Parallel: " + slp6.xc);
+				error(end6 - start6 + "ms");
 				if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false)
 				{
 					error("SLPs did not match. Terminating.");
@@ -165,6 +170,7 @@ public class TestBinarySearch
 						long start6 = System.currentTimeMillis();
 						SLP slp6 = ParallelMatrixOptimize.parallelPeraltaOptimize(sample, sample.getDimension(), sample.getLength(), 0);
 						long end6 = System.currentTimeMillis();
+						error("Elapsed time: " + (end6 - start6));
 
 						// Make sure we actually have the same result for both
 						error("Recursive: " + slp4.xc);

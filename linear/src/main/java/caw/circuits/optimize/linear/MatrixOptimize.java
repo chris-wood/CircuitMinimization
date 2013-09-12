@@ -574,6 +574,85 @@ public class MatrixOptimize
 		}
 	}
 
+	// To avoid throwing stuff on the stack
+	public static void kweight_sums(ArrayList<int[]> sums, WALK_DIR dir, int n, int k, int bit, int[] acc) throws Exception
+	{
+
+		// NOTE: sums assumed to be non-null from caller
+
+		if (n == 1)
+		{
+			int[] target = acc;
+			if (k == 1)
+			{	
+				target = XOR(walk_base.getRow(bit), acc);
+			}
+			sums.add(XOR(walk_newBase, target));
+			// if (areEqual(XOR(walk_newBase, target), walk_ft))
+			// {
+			// 	return walk_od;
+			// }
+			// else
+			// {
+			// 	return walk_od + 1;	
+			// }
+		}
+		else if (k == 0)
+		{
+			sums.add(XOR(walk_newBase, acc));
+			// if (areEqual(XOR(walk_newBase, acc), walk_ft))
+			// {
+			// 	return walk_od;
+			// }
+			// else
+			// {
+			// 	return walk_od + 1;
+			// }
+		}
+		else if (k == n)
+		{
+			int[] target = acc;
+			for (int i = bit; i < (n + bit); i++) 
+			{
+				target = XOR(target, walk_base.getRow(i));
+			}
+			sums.add(XOR(walk_newBase, target));
+			// if (areEqual(XOR(walk_newBase, target), walk_ft))
+			// {
+			// 	return walk_od;
+			// }
+			// else
+			// {
+			// 	return walk_od + 1;
+			// }
+		}
+		else if (dir == WALK_DIR.LEFT)
+		{
+			kweight_sums(sums, WALK_DIR.RIGHT, n - 1, k - 1, bit + 1, XOR(acc, walk_base.getRow(bit)));
+			kweight_sums(sums, WALK_DIR.LEFT, n - 1, k, bit + 1, acc);
+		}
+		else
+		{
+			kweight_sums(sums, WALK_DIR.LEFT, n - 1, k - 1, bit + 1, XOR(acc, walk_base.getRow(bit)));
+			kweight_sums(sums, WALK_DIR.RIGHT, n - 1, k, bit + 1, acc);
+		}
+	}
+
+	// compute the sums of all k-combinations of rows between start and end index of the base rows
+	// that is... pick k base signals in [start,end] and compute their sums
+	public static ArrayList<int[]> hamiltonian_sums(Matrix base, int[] newBase, int start, int end, int k) throws Exception
+	{
+		ArrayList<int[]> sums = new ArrayList<int[]>();
+
+		walk_base = base.subMatrix(start, end, 0, base.getLength());
+		int[] acc = new int[base.getLength()];
+		for (int j = 0; j < acc.length; j++) acc[j] = 0;
+		walk_newBase = newBase;
+		// distance[i] = walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, 0, ft1);
+		kweight_sums(sums, WALK_DIR.RIGHT, end - start + 1, k, 0, acc); // n = start - end + 1 
+		return sums;
+	}
+
 	public static int walkWeightedSequencesAndCheck(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
 	{
 		//ArrayList<Integer> nz = findNonzeros(seq);
@@ -879,15 +958,63 @@ public class MatrixOptimize
 		return distance;
 	}
 
+	// the heuristic(T, A, B) works as follows:
+	// 1. Iniitlaize array for T with 0 elements (unchosen)
+	// 2. for each unchosen index i
+	// 3. split A and B into two lists each (A0/A1 and B0/B1)
+	// 4. set u = T[i]
+	// 5. set pickedPositions(T,i) = 1 (set ith bit as chosen)
+	// 6. if (u == 0) recursively solve (T, A0, B0) and (T, A1, B1), else solve (T, A0, B1) and (T, A1, B0)
+	// ... this splits all the way down to single-element lists, which become the elements alpha and beta that are sought after
+	public static Pair split_subset_sum(int[] T, ArrayList<int[]> A, ArrayList<int[]> B)
+	{
+		int[] tbits = new int[T.length]; // automatically initialized to zero when malloc'd
+		for (int i = 0; i < tbits.length; i++)
+		{
+			if (tbits[i] == 0) // unchosen
+			{
+				ArrayList<int[]> A0 = new ArrayList<int[]>();
+				ArrayList<int[]> A1 = new ArrayList<int[]>();
+				ArrayList<int[]> B0 = new ArrayList<int[]>();
+				ArrayList<int[]> B1 = new ArrayList<int[]>();
+
+				// TODO: finish implementing the heuristic here - see Rene's comments for details on the list splitting
+			}
+		}
+	}
+
 	public static int[] compute_distance_target_split(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
 	{
-		// TODO
+		int n = m.getDimension();
+		int[] distance = new int[n];
+		for (int i = 0; i < n; i++)
+		{
+			// Input target T is each row of m (the set of targets)
+			// k value is the corresponding index in the distance array
+			int[] fi = m.getRow(i);
+			int k = dist[i];
 
-		// Input target T is each row of m (the set of targets)
-		// k value is the corresponding index in the distance array
+			// #1 p1 and p2 are pointers to the starts of each split
+			int sp1 = 0;                             // 0 - 3/2 = 1, 3/2 + 1 = 2 - 3
+			int sp2 = (base.getDimension() / 2) + 1; // 0 - 4/2 = 2, 5/2 + 1 = 3 - 4
+
+			// #2 pick a random a (and corresponding b...)
+			Random prng = new Random(System.currentTimeMillis());
+			int a = prng.nextInt(k);
+			int b = k - a;
+
+			// #3 use hamiltonian path method to commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
+			ArrayList<int[]> Alist = hamiltonian_sums(base, newBase, 0, sp2 - 1, a); // |Alist| = C(n/2,a)
+			ArrayList<int[]> Blist = hamiltonian_sums(base, newBase, sp2, base.getDimension(), b); // |Blist| = C(n/2,b)
+
+			// #4 invoke heuristic with Alist and Blist
+			// TODO: see split_subset_sum method above
+		}
+
+		return distance;
 
 		// compute the distance as follows:
-		// 1. split the rows of m into two lists 
+		// 1. split the rows of base into two lists 
 		// 2. guess a and b (# elements from first half and second half, resp) such that a+b = k and a,b <= k
 		// 3. With hamiltonian path method, commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
 		// 4. invoke heuristic with T, A and B

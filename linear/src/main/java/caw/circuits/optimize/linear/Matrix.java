@@ -213,16 +213,16 @@ public class Matrix
 
 	public Matrix subMatrix(int nvars) throws Exception
 	{
-		return subMatrix(r, nvars);
+		return subMatrix(0, r, 0, nvars);
 	}
 
-	public Matrix subMatrix(int rr, int cc) throws Exception
+	public Matrix subMatrix(int rs, int re, int cs, int ce) throws Exception
 	{
 		ArrayList<int[]> rows = new ArrayList<int[]>();
-		for (int i = 0; i < rr; i++)
+		for (int i = rs; i < re; i++)
 		{
-			int[] row = new int[rr];
-			for (int j = 0; j < cc; j++)
+			int[] row = new int[re - rs + 1];
+			for (int j = cs; j < ce; j++)
 			{
 				row[i] = m[i][j];
 			}
