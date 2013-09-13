@@ -221,7 +221,7 @@ public class Matrix
 		ArrayList<int[]> rows = new ArrayList<int[]>();
 		for (int i = rs; i < re; i++)
 		{
-			int[] row = new int[re - rs + 1];
+			int[] row = new int[ce - cs];
 			for (int j = cs; j < ce; j++)
 			{
 				row[i] = m[i][j];
@@ -293,6 +293,7 @@ public class Matrix
 	{
 		if ((i < 0 || i >= r) || (j < 0 || j >= c))
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid column or row index.");
 		}
 		m[i][j] = v;
@@ -303,6 +304,7 @@ public class Matrix
 	{
 		if (index < 0 || index >= c)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid column index: " + index);
 		}
 
@@ -317,6 +319,7 @@ public class Matrix
 	{
 		if (index < 0 || index >= r)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid row index: " + index);
 		}
 
@@ -331,10 +334,12 @@ public class Matrix
 	{
 		if (col.length != r)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid column dimension.");
 		}
 		if (index < 0 || index >= c) 
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid column index.");
 		}
 
@@ -350,10 +355,12 @@ public class Matrix
 	{
 		if (row.length != c)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid row dimension.");
 		}
 		if (index < 0 || index >= r) 
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid row index.");
 		}
 
@@ -369,6 +376,7 @@ public class Matrix
 	{
 		if (col.length != r)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid column dimension.");
 		}
 
@@ -395,6 +403,7 @@ public class Matrix
 	{
 		if (row.length != c)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid row dimension.");
 		}
 
@@ -421,6 +430,7 @@ public class Matrix
 	{
 		if (row.length != c)
 		{
+			System.out.println(this.toString());
 			throw new Exception("Invalid row dimension.");
 		}
 		for (int i = 0; i < m.length; i++)

@@ -27,10 +27,10 @@ public class MatrixOptimize
 	static void disp(ArrayList<int[]> vs) {
 		for (int i = 0; i < vs.size(); i++) disp(vs.get(i));
 	}
-	static void dispStrings(ArrayList<String> vs) {
+	static void disp_strings(ArrayList<String> vs) {
 		for (int i = 0; i < vs.size(); i++) disp(vs.get(i));
 	}
-	static void dispVectors(ArrayList<Vector> vs) {
+	static void disp_vectors(ArrayList<Vector> vs) {
 		for (int i = 0; i < vs.size(); i++) disp(vs.get(i).row);
 	}
 	static ArrayList<Pair> copy(ArrayList<Pair> pairs) {
@@ -39,12 +39,12 @@ public class MatrixOptimize
 		return np;
 	}
 
-	public static double taxiNorm(int[] v)
+	public static double taxi_norm(int[] v)
 	{
 		return (double)sum(v);
 	}
 
-	public static double euclideanNorm(int[] v)
+	public static double euclidean_norm(int[] v)
 	{
 		double sum = 0.0;
 		for (int i = 0; i < v.length; i++)
@@ -97,7 +97,7 @@ public class MatrixOptimize
 		return wt;
 	}
 
-	public static boolean isZero(int[] v)
+	public static boolean is_zero(int[] v)
 	{
 		for (int i = 0; i < v.length; i++)
 		{
@@ -106,7 +106,7 @@ public class MatrixOptimize
 		return true;
 	}
 
-	public static boolean areEqual(int[] a, int[] b)
+	public static boolean are_equal(int[] a, int[] b)
 	{
 		for (int i = 0; i < a.length; i++)
 		{
@@ -126,7 +126,7 @@ public class MatrixOptimize
 		return c;
 	}
 
-	public static int[] addMod(int[] a, int[] b, int mod) throws Exception
+	public static int[] add_mod(int[] a, int[] b, int mod) throws Exception
 	{
 		int[] c = new int[a.length];
 		if (a.length != b.length) throw new Exception("Vector dimensions don't match for addition.");
@@ -137,7 +137,7 @@ public class MatrixOptimize
 		return c;
 	}
 
-	public static int compareReverse(int[] x, int[] y) throws Exception
+	public static int compare_reverse(int[] x, int[] y) throws Exception
 	{
 		if (x.length != y.length) throw new Exception("Error: vector dimensions do not match");
 		for (int i = x.length - 1; i >= 0; i--) 
@@ -205,7 +205,7 @@ public class MatrixOptimize
 		return nx;
 	}
 
-	public static ArrayList<MatrixState> paarOptimize(Matrix currMatrix, int n) throws Exception
+	public static ArrayList<MatrixState> paar_optimize(Matrix currMatrix, int n) throws Exception
 	{
 		ArrayList<MatrixState> history = new ArrayList<MatrixState>();
 		int lastCol = n - 1;
@@ -268,7 +268,7 @@ public class MatrixOptimize
 		return history;
 	}
 
-	public static ArrayList<MatrixState> paarOptimizeExhaustive(Matrix currMatrix, int n, int oldi, int oldj, int lastcol) throws Exception
+	public static ArrayList<MatrixState> paar_optimize_exhaustive(Matrix currMatrix, int n, int oldi, int oldj, int lastcol) throws Exception
 	{
 		ArrayList<MatrixState> history = new ArrayList<MatrixState>();
 		MatrixState state = new MatrixState(currMatrix, oldi, oldj, lastcol - 1);
@@ -333,7 +333,7 @@ public class MatrixOptimize
 				}
 
 				// Recurse
-				ArrayList<MatrixState> rHistory = paarOptimizeExhaustive(newMatrix, i, j, n, lastcol + 1);
+				ArrayList<MatrixState> rHistory = paar_optimize_exhaustive(newMatrix, i, j, n, lastcol + 1);
 				if (rHistory.size() > 0)
 				{
 					int g = rHistory.get(rHistory.size() - 1).matrix.getGateCount();
@@ -352,7 +352,7 @@ public class MatrixOptimize
 
 	// static int combs; // number of linear combinations...
 	// static SharedInteger d; // worst case...
-	public static int peraltaDistance(final Matrix base, final int[] f) throws Exception
+	public static int peralta_distance(final Matrix base, final int[] f) throws Exception
 	{
 		final int n = base.getDimension(); // number of rows - this is correct
 		final int vars = f.length;
@@ -372,12 +372,12 @@ public class MatrixOptimize
 				if (((1 << i) & c) != 0)
 				{
 					adds++;
-					sum = addMod(sum, base.getRow(i), 2);
+					sum = add_mod(sum, base.getRow(i), 2);
 					// sum = add(sum, base.getRow(i));
 				}
 			}
 
-			if (areEqual(f, sum) == true && adds < d)
+			if (are_equal(f, sum) == true && adds < d)
 			{
 				d = adds;
 			} 
@@ -386,7 +386,7 @@ public class MatrixOptimize
 		// return d.get();
 	}
 
-	public static ArrayList<Vector> walkWeightedSequences(int n, int k) throws Exception
+	public static ArrayList<Vector> walk_weighted_sequences(int n, int k) throws Exception
 	{
 		ArrayList<Vector> visited = new ArrayList<Vector>();
 		ArrayList<int[]> queue = new ArrayList<int[]>();
@@ -400,8 +400,8 @@ public class MatrixOptimize
 		while (queue.size() > 0)
 		{
 			int[] seq = queue.remove(0); // pop 
-			ArrayList<Integer> nz = findNonzeros(seq);
-			ArrayList<Integer> z = findZeros(seq);
+			ArrayList<Integer> nz = find_nonzeros(seq);
+			ArrayList<Integer> z = find_zeros(seq);
 			for (int i = 0; i < nz.size(); i++)
 			{
 				for (int j = 0; j < z.size(); j++)
@@ -444,7 +444,7 @@ public class MatrixOptimize
 	// 	return x;
 	// }
 
-	public static ArrayList<Vector> walkWeightedSequences_v2(WALK_DIR dir, int n, int k, String pre, String post) throws Exception
+	public static ArrayList<Vector> walk_weighted_sequences_v2(WALK_DIR dir, int n, int k, String pre, String post) throws Exception
 	{
 		ArrayList<Vector> seqs = new ArrayList<Vector>();
 		if (n == 1)
@@ -479,17 +479,17 @@ public class MatrixOptimize
 		else if (dir == WALK_DIR.LEFT)
 		{
 			System.out.println("left to right: " + n + " : " + k + " " + pre + " 1 " + post);
-			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k - 1, pre + "1", post));
+			seqs.addAll(walk_weighted_sequences_v2(WALK_DIR.RIGHT, n - 1, k - 1, pre + "1", post));
 			System.out.println("left to left: " + n + " : " + k + " " + pre + " 0 " + post);
-			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k, pre + "0", post));
+			seqs.addAll(walk_weighted_sequences_v2(WALK_DIR.LEFT, n - 1, k, pre + "0", post));
 			return seqs;
 		}
 		else
 		{
 			System.out.println("right to left: " + n + " : " + k + " " + pre + " 1 " + post);
-			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.LEFT, n - 1, k - 1, pre + "1", post));
+			seqs.addAll(walk_weighted_sequences_v2(WALK_DIR.LEFT, n - 1, k - 1, pre + "1", post));
 			System.out.println("right to right: " + n + " : " + k + " " + pre + " 0 " + post);
-			seqs.addAll(walkWeightedSequences_v2(WALK_DIR.RIGHT, n - 1, k, pre + "0", post));
+			seqs.addAll(walk_weighted_sequences_v2(WALK_DIR.RIGHT, n - 1, k, pre + "0", post));
 			return seqs;
 		}
 	}
@@ -500,7 +500,7 @@ public class MatrixOptimize
 	public static int walk_od;
 	public static Matrix walk_base;
 
-	public static int walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR dir, int n, 
+	public static int walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR dir, int n, 
 		int k, int bit, int[] acc) throws Exception
 	{
 		if (n == 1)
@@ -510,7 +510,7 @@ public class MatrixOptimize
 			{	
 				target = XOR(walk_base.getRow(bit), acc);
 			}
-			if (areEqual(XOR(walk_newBase, target), walk_ft))
+			if (are_equal(XOR(walk_newBase, target), walk_ft))
 			{
 				return walk_od;
 			}
@@ -521,7 +521,7 @@ public class MatrixOptimize
 		}
 		else if (k == 0)
 		{
-			if (areEqual(XOR(walk_newBase, acc), walk_ft))
+			if (are_equal(XOR(walk_newBase, acc), walk_ft))
 			{
 				return walk_od;
 			}
@@ -537,7 +537,7 @@ public class MatrixOptimize
 			{
 				target = XOR(target, walk_base.getRow(i));
 			}
-			if (areEqual(XOR(walk_newBase, target), walk_ft))
+			if (are_equal(XOR(walk_newBase, target), walk_ft))
 			{
 				return walk_od;
 			}
@@ -548,12 +548,12 @@ public class MatrixOptimize
 		}
 		else if (dir == WALK_DIR.LEFT)
 		{
-			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, n - 1, k - 1, bit + 1, 
+			if (walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR.RIGHT, n - 1, k - 1, bit + 1, 
 				XOR(acc, walk_base.getRow(bit))) == walk_od)
 			{
 				return walk_od;
 			}
-			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.LEFT, n - 1, k, bit + 1, acc) == walk_od)
+			if (walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR.LEFT, n - 1, k, bit + 1, acc) == walk_od)
 			{
 				return walk_od;
 			}
@@ -561,12 +561,12 @@ public class MatrixOptimize
 		}
 		else
 		{
-			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.LEFT, n - 1, k - 1, bit + 1, 
+			if (walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR.LEFT, n - 1, k - 1, bit + 1, 
 				XOR(walk_base.getRow(bit), acc)) == walk_od)
 			{
 				return walk_od;
 			}
-			if (walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, n - 1, k, bit + 1, acc) == walk_od)
+			if (walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR.RIGHT, n - 1, k, bit + 1, acc) == walk_od)
 			{
 				return walk_od;
 			}
@@ -588,7 +588,7 @@ public class MatrixOptimize
 				target = XOR(walk_base.getRow(bit), acc);
 			}
 			sums.add(XOR(walk_newBase, target));
-			// if (areEqual(XOR(walk_newBase, target), walk_ft))
+			// if (are_equal(XOR(walk_newBase, target), walk_ft))
 			// {
 			// 	return walk_od;
 			// }
@@ -600,7 +600,7 @@ public class MatrixOptimize
 		else if (k == 0)
 		{
 			sums.add(XOR(walk_newBase, acc));
-			// if (areEqual(XOR(walk_newBase, acc), walk_ft))
+			// if (are_equal(XOR(walk_newBase, acc), walk_ft))
 			// {
 			// 	return walk_od;
 			// }
@@ -617,7 +617,7 @@ public class MatrixOptimize
 				target = XOR(target, walk_base.getRow(i));
 			}
 			sums.add(XOR(walk_newBase, target));
-			// if (areEqual(XOR(walk_newBase, target), walk_ft))
+			// if (are_equal(XOR(walk_newBase, target), walk_ft))
 			// {
 			// 	return walk_od;
 			// }
@@ -642,21 +642,23 @@ public class MatrixOptimize
 	// that is... pick k base signals in [start,end] and compute their sums
 	public static ArrayList<int[]> hamiltonian_sums(Matrix base, int[] newBase, int start, int end, int k) throws Exception
 	{
-		ArrayList<int[]> sums = new ArrayList<int[]>();
+		ArrayList<int[]> sums = new ArrayList<int[]>(); // end is inclusive
 
-		walk_base = base.subMatrix(start, end, 0, base.getLength());
+		disp("start/end = " + start + "," + end);
+		disp(base.toString());
+		walk_base = base.subMatrix(start, end + 1, 0, base.getLength());
 		int[] acc = new int[base.getLength()];
 		for (int j = 0; j < acc.length; j++) acc[j] = 0;
 		walk_newBase = newBase;
-		// distance[i] = walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, 0, ft1);
+		// distance[i] = walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, 0, ft1);
 		kweight_sums(sums, WALK_DIR.RIGHT, end - start + 1, k, 0, acc); // n = start - end + 1 
 		return sums;
 	}
 
-	public static int walkWeightedSequencesAndCheck(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	public static int walk_weighted_sequencesAndCheck(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
 	{
-		//ArrayList<Integer> nz = findNonzeros(seq);
-		//ArrayList<Integer> z = findZeros(seq);
+		//ArrayList<Integer> nz = find_nonzeros(seq);
+		//ArrayList<Integer> z = find_zeros(seq);
 		//ArrayList<Integer> seqs = new ArrayList<Integer>();
 		ArrayList<Vector> visited = new ArrayList<Vector>();
 		ArrayList<int[]> queue = new ArrayList<int[]>();
@@ -675,26 +677,6 @@ public class MatrixOptimize
 			int[] seq = queue.remove(0); // pop out the first one...
 			int start = firstRun ? -1 : starts.remove(0);
 			int end = firstRun ? -1 : ends.remove(0);
-			// ArrayList<Integer> nz = findNonzeros(seq);
-			// if (starts.size() > 0)
-			// {
-			// 	int start = (int)starts.remove(0).intValue();
-			// 	// disp("Removing nonzeros before " + start);
-			// 	while (nz.size() > 0 && nz.get(0) < start) // drop
-			// 	{
-			// 		nz.remove(0);
-			// 	}
-			// }
-			// ArrayList<Integer> z = findZeros(seq);
-			// if (ends.size() > 0)
-			// {
-			// 	int end = (int)ends.remove(0).intValue();
-			// 	// disp("Removing nonzeros before " + start);
-			// 	while (z.size() > 0 && z.get(0) < end) // drop
-			// 	{
-			// 		z.remove(0);
-			// 	}	
-			// }
 			for (int i = 0; i < n; i++)
 			{
 				if (seq[i] == 1 && (i > start || start == -1))
@@ -718,17 +700,11 @@ public class MatrixOptimize
 								queue.add(v.row);
 
 								// Check to see if we have a match...
-								if (areEqual(XOR(newBase, base.xorRows(v.row)), f))
+								if (are_equal(XOR(newBase, base.xorRows(v.row)), f))
 								{
 									return k;
 								}
-
-								//walkWeightedSequences(mod, visited); // depth first traversal of the graph
 							}
-
-							// Flip back
-							// seq[i] = seq[i] == 0 ? 1 : 0;
-							// seq[j] = seq[j] == 0 ? 1 : 0;
 						}
 					}
 				}
@@ -738,7 +714,7 @@ public class MatrixOptimize
 		return k + 1;
 	}
 
-	public static int walkWeightedSequencesAndCheck_v2(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	public static int walk_weighted_sequences_and_check_v2(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
 	{
 		LinkedList<Integer> queue = new LinkedList<Integer>();
 		HashSet<Integer> visited = new HashSet<Integer>();
@@ -768,7 +744,7 @@ public class MatrixOptimize
 								queue.addLast(mod);
 
 								// Check to see if we have a match...
-								if (areEqual(XOR(newBase, base.xorRows(mod)), f))
+								if (are_equal(XOR(newBase, base.xorRows(mod)), f))
 								{
 									return k;
 								}
@@ -782,7 +758,7 @@ public class MatrixOptimize
 		return k + 1;
 	}
 
-	public static int walkWeightedSequencesAndCheck_v3(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
+	public static int walk_weighted_sequences_and_check_v3(int n, int k, Matrix base, int[] f, int[] newBase) throws Exception
 	{
 		LinkedList<Integer> queue = new LinkedList<Integer>();
 		HashSet<Integer> visited = new HashSet<Integer>();
@@ -812,7 +788,7 @@ public class MatrixOptimize
 								queue.addLast(mod);
 
 								// Check to see if we have a match...
-								if (areEqual(XOR(newBase, base.xorRows(mod)), f))
+								if (are_equal(XOR(newBase, base.xorRows(mod)), f))
 								{
 									return k;
 								}
@@ -826,7 +802,7 @@ public class MatrixOptimize
 		return k + 1;
 	}
 
-	public static ArrayList<Integer> findNonzeros(int[] x)
+	public static ArrayList<Integer> find_nonzeros(int[] x)
 	{
 		ArrayList<Integer> nz = new ArrayList<Integer>();
 		for (int i = 0; i < x.length; i++)
@@ -836,7 +812,7 @@ public class MatrixOptimize
 		return nz;
 	}
 
-	public static ArrayList<Integer> findZeros(int[] x)
+	public static ArrayList<Integer> find_zeros(int[] x)
 	{
 		ArrayList<Integer> z = new ArrayList<Integer>();
 		for (int i = 0; i < x.length; i++)
@@ -846,16 +822,16 @@ public class MatrixOptimize
 		return z;
 	}
 
-	public static int optimizedPeraltaDistance(Matrix base, int[] newBase, int[] f, int od) throws Exception
+	public static int optimized_peralta_distance(Matrix base, int[] newBase, int[] f, int od) throws Exception
 	{
 		for (int i = 0; i < base.getDimension(); i++)
 		{
-			if (areEqual(base.getRow(i), f))
+			if (are_equal(base.getRow(i), f))
 			{
 				return 0;
 			}
 		}
-		if (areEqual(newBase, f))
+		if (are_equal(newBase, f))
 		{
 			return 0;
 		}
@@ -878,7 +854,7 @@ public class MatrixOptimize
 		{
 			for (int i = index; i < base.getDimension(); i++)
 			{
-				if (areEqual(f, base.getRow(i)))
+				if (are_equal(f, base.getRow(i)))
 				{
 					return true;
 				}
@@ -897,31 +873,31 @@ public class MatrixOptimize
 		return false;
 	}
 
-	public static int[] computeDistance(Matrix base, Matrix m) throws Exception
+	public static int[] compute_distance(Matrix base, Matrix m) throws Exception
 	{
 		int n = m.getDimension();
 		int[] distance = new int[n];
 		for (int i = 0; i < n; i++)
 		{
 			int[] fi = m.getRow(i);
-			distance[i] = peraltaDistance(base, fi);
+			distance[i] = peralta_distance(base, fi);
 		}
 		return distance;
 	}
 
-	public static int[] optimizedComputeDistance(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
+	public static int[] optimized_compute_distance(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
 	{
 		int n = m.getDimension();
 		int[] distance = new int[n];
 		for (int i = 0; i < n; i++)
 		{
 			int[] fi = m.getRow(i);
-			distance[i] = optimizedPeraltaDistance(base, newBase, fi, dist[i]);
+			distance[i] = optimized_peralta_distance(base, newBase, fi, dist[i]);
 		}
 		return distance;
 	}
 
-	public static int[] computeDistanceGraphWalk(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
+	public static int[] compute_distance_graph_walk(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
 	{
 		int n = m.getDimension();
 		int[] distance = new int[n];
@@ -931,7 +907,7 @@ public class MatrixOptimize
 			boolean match = false;
 			for (int j = 0; j < base.getDimension(); j++)
 			{
-				if (areEqual(base.getRow(j), fi))
+				if (are_equal(base.getRow(j), fi))
 				{
 					distance[i] = 0;
 					match = true;
@@ -939,7 +915,7 @@ public class MatrixOptimize
 			}
 			if (!match)
 			{
-				if (areEqual(newBase, fi))
+				if (are_equal(newBase, fi))
 				{
 					distance[i] = 0;
 				}
@@ -951,7 +927,7 @@ public class MatrixOptimize
 					walk_newBase = newBase;
 					walk_od = dist[i] - 1;
 					walk_base = base;
-					distance[i] = walkWeightedSequencesAndChangeWithGraph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, 0, ft1);
+					distance[i] = walk_weighted_sequences_and_change_with_graph_v2(WALK_DIR.RIGHT, base.getDimension(), dist[i] - 1, 0, ft1);
 				}
 			}
 		}
@@ -966,9 +942,38 @@ public class MatrixOptimize
 	// 5. set pickedPositions(T,i) = 1 (set ith bit as chosen)
 	// 6. if (u == 0) recursively solve (T, A0, B0) and (T, A1, B1), else solve (T, A0, B1) and (T, A1, B0)
 	// ... this splits all the way down to single-element lists, which become the elements alpha and beta that are sought after
-	public static Pair split_subset_sum(int[] T, ArrayList<int[]> A, ArrayList<int[]> B)
+
+	// heuristic:
+	//  Pick an unchosen position i from T.
+
+	//  Split A into A0 and A1, where A0 are those elements
+	//  of A that contain a 0 at position i and A1 are those
+	//  elements of A that contain a 1 at position i.
+	//  Do the same with B.
+
+	//  u = T[i];
+
+	//  declare position i "chosen";
+
+	//  if (u == 0) recursively solve (A0,B0,T) and (A1,B1,T);
+	//  else recursively solve (A0,B1,T) and (A1,B0,T);
+	public static VectorPair split_subset_sum(int[] T, ArrayList<int[]> A, ArrayList<int[]> B) throws Exception
 	{
 		int[] tbits = new int[T.length]; // automatically initialized to zero when malloc'd
+
+		// Check the base case - the size of A/B is one entry and the XOR is T
+		if (A.size() == 1 && B.size() == 1)
+		{
+			if (are_equal(XOR(A.get(0), B.get(0)), T))
+			{
+				return new VectorPair(A.get(0), B.get(0)); // this pair added up to T
+			}
+			else
+			{
+				return null; // this pair didn't add up to T
+			}
+		}
+
 		for (int i = 0; i < tbits.length; i++)
 		{
 			if (tbits[i] == 0) // unchosen
@@ -978,9 +983,61 @@ public class MatrixOptimize
 				ArrayList<int[]> B0 = new ArrayList<int[]>();
 				ArrayList<int[]> B1 = new ArrayList<int[]>();
 
-				// TODO: finish implementing the heuristic here - see Rene's comments for details on the list splitting
+				// Split as per comments above
+				for (int[] aentry : A)
+				{
+					if (aentry[i] == 0)
+					{
+						A0.add(aentry);
+					}
+					else
+					{
+						A1.add(aentry);	
+					}
+				}
+				for (int[] bentry : B)
+				{
+					if (bentry[i] == 0)
+					{
+						B0.add(bentry);
+					}
+					else
+					{
+						B1.add(bentry);	
+					}
+				}
+
+				// Set the ith bit as chosen
+				int u = T[i];
+				tbits[i] = 1; 
+
+				// Recursively solve the two splits
+				VectorPair vp = null;
+				if (u == 0)
+				{
+					// (A0,B0,T) and (A1,B1,T);
+					vp = split_subset_sum(T, A0, B0);
+					if (vp == null)
+					{
+						vp = split_subset_sum(T, A1, B1);
+					}
+
+				}
+				else
+				{
+					// (A0,B1,T) and (A1,B0,T);
+					vp = split_subset_sum(T, A0, B1);
+					if (vp == null)
+					{
+						vp = split_subset_sum(T, A1, B0);
+					}
+				}
+				return vp;
 			}
 		}
+
+		// Should not get here... 
+		throw new Exception("Should NOT GET HERE!");
 	}
 
 	public static int[] compute_distance_target_split(Matrix base, Matrix m, int[] newBase, int[] dist) throws Exception
@@ -1005,7 +1062,7 @@ public class MatrixOptimize
 
 			// #3 use hamiltonian path method to commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
 			ArrayList<int[]> Alist = hamiltonian_sums(base, newBase, 0, sp2 - 1, a); // |Alist| = C(n/2,a)
-			ArrayList<int[]> Blist = hamiltonian_sums(base, newBase, sp2, base.getDimension(), b); // |Blist| = C(n/2,b)
+			ArrayList<int[]> Blist = hamiltonian_sums(base, newBase, sp2, base.getDimension() - 1, b); // |Blist| = C(n/2,b)
 
 			// #4 invoke heuristic with Alist and Blist
 			// TODO: see split_subset_sum method above
@@ -1029,7 +1086,7 @@ public class MatrixOptimize
 		// ... this splits all the way down to single-element lists, which become the elements alpha and beta that are sought after
 	}
 
-	public static BasePair pickBase(Matrix base, Matrix m, int[] dist, int tieBreaker, int distanceMethod) throws Exception
+	public static BasePair pick_base(Matrix base, Matrix m, int[] dist, int tieBreaker, int distanceMethod) throws Exception
 	{
 		int n = base.getDimension(); // each row is a base...
 		int d = sum(dist);
@@ -1045,19 +1102,22 @@ public class MatrixOptimize
 			{
 				if (i != j)
 				{
-					int[] sum = addMod(base.getRow(i), base.getRow(j), 2);
-					if (!(base.containsRow(sum)) && !isZero(sum)) // bases can't be zero and we don't repeat bases
+					int[] sum = add_mod(base.getRow(i), base.getRow(j), 2);
+					if (!(base.containsRow(sum)) && !is_zero(sum)) // bases can't be zero and we don't repeat bases
 					{
 						int[] newDist = null;
 						switch (distanceMethod)
 						{
 							case 1: 
-								// newDist = computeDistanceGraphWalk(base, m, sum, dist);
-								newDist = computeDistanceGraphWalk(base, m, sum, dist);
+								// newDist = compute_distance_graph_walk(base, m, sum, dist);
+								newDist = compute_distance_graph_walk(base, m, sum, dist);
+								break;
+							case 2:
+								newDist = compute_distance_target_split(base, m, sum, dist);
 								break;
 							default: // bank on recursive method
 								// just FYI: sum is the new base
-								newDist = optimizedComputeDistance(base, m, sum, dist);
+								newDist = optimized_compute_distance(base, m, sum, dist);
 								break;
 						}
 						int newDistSum = sum(newDist);
@@ -1090,14 +1150,14 @@ public class MatrixOptimize
 		switch (tieBreaker)
 		{
 			case 0: // norm
-				maxNorm = euclideanNorm(optimalDistances.get(0));
+				maxNorm = euclidean_norm(optimalDistances.get(0));
 				optimalBase = optimalBases.get(0);
 				optimalDist = optimalDistances.get(0);
 				mi = pairs.get(0).i;
 				mj = pairs.get(0).j;
 				for (int i = 1; i < optimalDistances.size(); i++)
 				{
-					double norm = euclideanNorm(optimalDistances.get(i));
+					double norm = euclidean_norm(optimalDistances.get(i));
 					if (norm > maxNorm)
 					{
 						maxNorm = norm;
@@ -1106,7 +1166,7 @@ public class MatrixOptimize
 						mi = pairs.get(i).i;
 						mj = pairs.get(i).j;
 					}
-					else if (norm == maxNorm && comparePairs(pairs.get(i).i, pairs.get(i).j, mi, mj) <= 0)
+					else if (norm == maxNorm && compare_pairs(pairs.get(i).i, pairs.get(i).j, mi, mj) <= 0)
 					{
 						maxNorm = norm;
 						optimalBase = optimalBases.get(i);
@@ -1127,11 +1187,11 @@ public class MatrixOptimize
 				mi = pairs.get(0).i;
 				mj = pairs.get(0).j;
 				// }
-				maxNorm = Math.pow(euclideanNorm(optimalDistances.get(0)), 2);
+				maxNorm = Math.pow(euclidean_norm(optimalDistances.get(0)), 2);
 				maxNorm = maxNorm - (double)largestDist;
 				for (int i = 1; i < optimalDistances.size(); i++)
 				{
-					double norm = Math.pow(euclideanNorm(optimalDistances.get(i)), 2);
+					double norm = Math.pow(euclidean_norm(optimalDistances.get(i)), 2);
 					norm = norm - (double)largest(optimalDistances.get(i));
 					if (norm > maxNorm)
 					{
@@ -1141,7 +1201,7 @@ public class MatrixOptimize
 						mi = pairs.get(i).i;
 						mj = pairs.get(i).j;
 					}
-					else if (norm == maxNorm && comparePairs(pairs.get(i).i, pairs.get(i).j, mi, mj) <= 0)
+					else if (norm == maxNorm && compare_pairs(pairs.get(i).i, pairs.get(i).j, mi, mj) <= 0)
 					{
 						maxNorm = norm;
 						optimalBase = optimalBases.get(i);
@@ -1168,11 +1228,11 @@ public class MatrixOptimize
 					}
 				}
 
-				maxNorm = Math.pow(euclideanNorm(optimalDistances.get(0)), 2);
+				maxNorm = Math.pow(euclidean_norm(optimalDistances.get(0)), 2);
 				maxNorm = maxNorm - (double)(firstLargestDist - secondLargestDist);
 				for (int i = 1; i < optimalDistances.size(); i++)
 				{
-					double norm = Math.pow(euclideanNorm(optimalDistances.get(i)), 2);
+					double norm = Math.pow(euclidean_norm(optimalDistances.get(i)), 2);
 					norm = norm - (double)(firstLargestDist - secondLargestDist);
 					if (norm > maxNorm)
 					{
@@ -1182,7 +1242,7 @@ public class MatrixOptimize
 						mi = pairs.get(i).i;
 						mj = pairs.get(i).j;
 					}
-					else if (norm == maxNorm && comparePairs(pairs.get(i).i, pairs.get(i).j, mi, mj) <= 0)
+					else if (norm == maxNorm && compare_pairs(pairs.get(i).i, pairs.get(i).j, mi, mj) <= 0)
 					{
 						maxNorm = norm;
 						optimalBase = optimalBases.get(i);
@@ -1211,7 +1271,7 @@ public class MatrixOptimize
 		return new BasePair(optimalBase, optimalDist, new Pair(mi, mj));
 	}
 
-	public static SLP peraltaOptimize(Matrix m, int r, int c, int tieBreaker, int distanceMethod) throws Exception
+	public static SLP peralta_optimize(Matrix m, int r, int c, int tieBreaker, int distanceMethod) throws Exception
 	{
 		ArrayList<String> slp = new ArrayList<String>();
 
@@ -1230,7 +1290,7 @@ public class MatrixOptimize
 		Matrix base = new Matrix(b, c);
 		
 		// Initialize the distance array and then get the ball rolling
-		int[] dist = computeDistance(base, m);
+		int[] dist = compute_distance(base, m);
 		for (int f = 0; f < dist.length; f++)
 		{
 			if (dist[f] == 0)
@@ -1248,9 +1308,9 @@ public class MatrixOptimize
 		int i = m.getLength();
 		int nVars = m.getLength();
 		int xorCount = 0;
-		while (isZero(dist) == false)
+		while (is_zero(dist) == false)
 		{
-			BasePair newBase = pickBase(base, m, dist, tieBreaker, distanceMethod);
+			BasePair newBase = pick_base(base, m, dist, tieBreaker, distanceMethod);
 			base.appendRow(newBase.base);
 
 			// Insert the new line
@@ -1260,7 +1320,7 @@ public class MatrixOptimize
 			xorCount++;
 			for (int f = 0; f < m.getDimension(); f++)
 			{
-				if (areEqual(newBase.base, m.getRow(f)))
+				if (are_equal(newBase.base, m.getRow(f)))
 				{
 					slp.add("y_" + f + " = " + "t_" + i);
 				}
@@ -1268,14 +1328,14 @@ public class MatrixOptimize
 			i++;
 
 			// Update the distance vector with this new base
-			// dist = computeDistance(base, m);
+			// dist = compute_distance(base, m);
 			dist = newBase.dist;
 		}
 
 		return new SLP(slp, xorCount, 0); // no ANDs required
 	}
 
-	public static ArrayList<MatrixState> exhaustiveOptimize(Matrix currMatrix, int oldi, int oldj, int n, int lastcol) throws Exception
+	public static ArrayList<MatrixState> exhaustive_optimize(Matrix currMatrix, int oldi, int oldj, int n, int lastcol) throws Exception
 	{
 		ArrayList<MatrixState> history = new ArrayList<MatrixState>();
 		MatrixState state = new MatrixState(currMatrix, oldi, oldj, lastcol - 1);
@@ -1313,7 +1373,7 @@ public class MatrixOptimize
 						}
 
 						// Recurse and only save the output if it's better than what we have so far
-						ArrayList<MatrixState> rHistory = exhaustiveOptimize(newMatrix, i, j, n, lastcol + 1);
+						ArrayList<MatrixState> rHistory = exhaustive_optimize(newMatrix, i, j, n, lastcol + 1);
 						if (rHistory.size() > 0)
 						{
 							int g = rHistory.get(rHistory.size() - 1).matrix.getGateCount();
@@ -1332,7 +1392,7 @@ public class MatrixOptimize
 		return history;
 	}
 
-	public static int comparePairs(int i1, int j1, int i2, int j2)
+	public static int compare_pairs(int i1, int j1, int i2, int j2)
 	{
 		if (i1 < i2)
 		{
@@ -1359,7 +1419,7 @@ public class MatrixOptimize
 		}
 	}
 
-	public static ArrayList<Vector> sortRowsReverseOrder(ArrayList<Vector> rows) throws Exception
+	public static ArrayList<Vector> sort_rows_reverse_order(ArrayList<Vector> rows) throws Exception
 	{
 		boolean swapped = true;
 		while (swapped) // simple bubble sort to put in reverse order
@@ -1373,7 +1433,7 @@ public class MatrixOptimize
 					Vector vj = rows.get(j);
 					int[] ri = vi.row;;
 					int[] rj = vj.row;
-					if (compareReverse(ri, rj) == -1) // then swap
+					if (compare_reverse(ri, rj) == -1) // then swap
 					{
 						rows.remove(i);
 						rows.add(i, vj);
@@ -1388,10 +1448,10 @@ public class MatrixOptimize
 	}
 
 	// this builds an SLP...
-	public static ArrayList<String> bernsteinOptimize(ArrayList<Vector> rows, int n, int p, int q) throws Exception
+	public static ArrayList<String> bernstein_optimize(ArrayList<Vector> rows, int n, int p, int q) throws Exception
 	{
 		ArrayList<String> slp = new ArrayList<String>();
-		rows = sortRowsReverseOrder(rows); // sort in reverse order - this is redundant at times
+		rows = sort_rows_reverse_order(rows); // sort in reverse order - this is redundant at times
 
 		if (q == 0) return slp;
 		if (p == 0)
@@ -1400,7 +1460,7 @@ public class MatrixOptimize
 		}
 		if (rows.get(q - 1).row[p - 1] == 0) // x_{p-1} is unused, so don't consider next time around
 		{
-			slp.addAll(bernsteinOptimize(rows, n, p - 1, q));
+			slp.addAll(bernstein_optimize(rows, n, p - 1, q));
 			return slp;
 		}
 		else if (q >= 2) // q - 1 == j
@@ -1413,14 +1473,14 @@ public class MatrixOptimize
 				rows.remove(q - 1);
 				rows.add(q - 1, new Vector(xor, tj));
 				slp.add("y_" + tj + " = y_" + ti + " XOR y_" + tj);
-				slp.addAll(bernsteinOptimize(rows, n, p, q));
+				slp.addAll(bernstein_optimize(rows, n, p, q));
 				return slp;
 			}
 			else
 			{
 				rows.get(q - 1).row[p - 1] = 0; // set the row to 0...
 				slp.add("y_" + rows.get(q - 1).id + " = x_" + (p - 1) + " XOR y_" + rows.get(q - 1).id);
-				slp.addAll(bernsteinOptimize(rows, n, p, q));
+				slp.addAll(bernstein_optimize(rows, n, p, q));
 				return slp;
 			}
 		}
@@ -1428,7 +1488,7 @@ public class MatrixOptimize
 		return slp;
 	}
 
-	public static int numGates(int n, ArrayList<MatrixState> history) throws Exception
+	public static int num_gates(int n, ArrayList<MatrixState> history) throws Exception
 	{
 		if (history.size() == 0)
 		{
@@ -1437,7 +1497,7 @@ public class MatrixOptimize
 		return history.get(history.size() - 1).matrix.getGateCount();
 	}
 
-	public static ArrayList<String> buildSLP(ArrayList<MatrixState> history, int vars) throws Exception
+	public static ArrayList<String> build_slp(ArrayList<MatrixState> history, int vars) throws Exception
 	{
 		ArrayList<String> slp = new ArrayList<String>();
 
@@ -1519,19 +1579,19 @@ public class MatrixOptimize
 		// int[][] test4 = {{1,1,1,0,0},{0,1,0,1,1},{1,0,1,1,1},{0,1,1,1,0},{1,1,0,1,0},{0,1,1,1,1}};
 		// Matrix m4 = new Matrix(test4, 5);
 		// disp(m4.toString());
-		// SLP slp4 = peraltaOptimize(m4, 6, 5, 0);
-		// SLP slp4 = parallelPeraltaOptimize(m4, 6, 5, 0);
-		// dispStrings(slp4.lines);
+		// SLP slp4 = peralta_optimize(m4, 6, 5, 0);
+		// SLP slp4 = parallelperalta_optimize(m4, 6, 5, 0);
+		// disp_strings(slp4.lines);
 		// long start = System.currentTimeMillis();
-		// SLP slp5 = parallelPeraltaOptimize(m4, 6, 5, 0);
+		// SLP slp5 = parallelperalta_optimize(m4, 6, 5, 0);
 		// long end = System.currentTimeMillis();
 		// disp("" + (end - start));
-		// dispStrings(slp5.lines);
+		// disp_strings(slp5.lines);
 		// start = System.currentTimeMillis();
-		// SLP slp6 = parallelPeraltaOptimize_v2(m4, 6, 5, 0);
+		// SLP slp6 = parallelperalta_optimize_v2(m4, 6, 5, 0);
 		// end = System.currentTimeMillis();
 		// disp("" + (end - start));
-		// dispStrings(slp6.lines);
+		// disp_strings(slp6.lines);
 
 		Vector v1 = new Vector(new int[] {1,1,0,0});
 		Vector v2 = new Vector(new int[] {1,1,0,0});
@@ -1545,10 +1605,10 @@ public class MatrixOptimize
 		int k = 3;
 		disp("Finding sequences for: " + n + "," + k);
 		long start = System.currentTimeMillis();
-		ArrayList<Vector> seqs = walkWeightedSequences(n, k); 
+		ArrayList<Vector> seqs = walk_weighted_sequences(n, k); 
 		long end = System.currentTimeMillis();
 		disp("Finding sequences for: " + n + "," + k + " with BigIntegers");
-		// ArrayList<BigInteger> ints = walkWeightedSequences_v2(n, k); 
+		// ArrayList<BigInteger> ints = walk_weighted_sequences_v2(n, k); 
 		disp("Result #1: " + (end - start) + "ms");
 		for (Vector s : seqs)
 		{
@@ -1558,7 +1618,7 @@ public class MatrixOptimize
 		lastString = "";
 		for (int i = 0; i < n; i++) lastString = lastString + "0";
 		start = System.currentTimeMillis();
-		ArrayList<Vector> seqs2 = walkWeightedSequences_v2(WALK_DIR.RIGHT, n, k, "", "");
+		ArrayList<Vector> seqs2 = walk_weighted_sequences_v2(WALK_DIR.RIGHT, n, k, "", "");
 		end = System.currentTimeMillis();
 		disp("Result #2: " + (end - start) + "ms");
 		for (Vector s : seqs)
@@ -1569,7 +1629,7 @@ public class MatrixOptimize
 		disp("" + (seqs.size() == seqs2.size()));
 	}
 
-	public static ArrayList<Matrix> buildMatrices(String file) throws Exception
+	public static ArrayList<Matrix> build_matrices(String file) throws Exception
 	{
 		ArrayList<Matrix> matrices = new ArrayList<Matrix>();
 		BufferedReader in = new BufferedReader(new FileReader(file)); 
@@ -1608,31 +1668,31 @@ public class MatrixOptimize
 
 			// error(m.toString());
 			// error("STARTING PAAR TEST");
-			// ArrayList<MatrixState> history = paarOptimize(m, m.getLength()); 
-			// tgc = numGates(m.getDimension(), history);
+			// ArrayList<MatrixState> history = paar_optimize(m, m.getLength()); 
+			// tgc = num_gates(m.getDimension(), history);
 			// gc = tgc < gc ? tgc : gc;
-			// // disp("Number of gates: " + numGates(m.getDimension(), history));
-			// if (debug) dispStrings(buildSLP(history, m.getLength()));
+			// // disp("Number of gates: " + num_gates(m.getDimension(), history));
+			// if (debug) disp_strings(build_slp(history, m.getLength()));
 
 			error("STARTING PERALTA TEST - TIE 0, RECURSIVE DISTANCE");
 			long start4 = System.currentTimeMillis();
-			SLP slp4 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0, 0);
+			SLP slp4 = peralta_optimize(m, m.getDimension(), m.getLength(), 0, 0);
 			long end4 = System.currentTimeMillis();
 			tgc = slp4.xc;
 			gc = tgc < gc ? tgc : gc;
 			// error("Number of gates: " + slp4.xc);
-			if (debug) dispStrings(slp4.lines);
+			if (debug) disp_strings(slp4.lines);
 			error("Elapsed time: " + (end4 - start4));
 
 			error("STARTING PERALTA TEST - TIE 0, GRAPH DISTANCE");
 			long start5 = System.currentTimeMillis();
-			SLP slp5 = peraltaOptimize(m, m.getDimension(), m.getLength(), 0, 1);
+			SLP slp5 = peralta_optimize(m, m.getDimension(), m.getLength(), 0, 1);
 			long end5 = System.currentTimeMillis();
 			tgc = slp5.xc;
 			gc = tgc < gc ? tgc : gc;
 			// error("Number of gates: " + slp4.xc);
 			error("Elapsed time: " + (end5 - start5));
-			if (debug) dispStrings(slp5.lines);
+			if (debug) disp_strings(slp5.lines);
 
 			total += gc;
 		}
@@ -1648,7 +1708,7 @@ public class MatrixOptimize
 		}
 		else if (args.length == 1)
 		{
-			ArrayList<Matrix> matrices = buildMatrices(args[0]);
+			ArrayList<Matrix> matrices = build_matrices(args[0]);
 			disp(optimize(matrices, true)); 
 		}
 		else if (args.length == 3)
@@ -1662,17 +1722,17 @@ public class MatrixOptimize
 			{
 				// Forward
 				String fname = header + "_" + i + "_forward.txt";
-				ArrayList<Matrix> matrices = buildMatrices(fname);
+				ArrayList<Matrix> matrices = build_matrices(fname);
 				int ftotal = optimize(matrices, false);
 
 				// Inverse
 				fname = header + "_" + i + "_inverse.txt";
-				matrices = buildMatrices(fname);
+				matrices = build_matrices(fname);
 				int itotal = optimize(matrices, false);
 
 				// Merged
 				fname = header + "_" + i + "_merged.txt";
-				matrices = buildMatrices(fname);
+				matrices = build_matrices(fname);
 				int mtotal = optimize(matrices, false);
 
 				// Write the results to the file header_i_count.txt

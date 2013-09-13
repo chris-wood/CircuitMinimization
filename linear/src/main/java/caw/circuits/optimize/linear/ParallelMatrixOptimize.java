@@ -32,7 +32,7 @@ public class ParallelMatrixOptimize
 	static ArrayList<Pair> p_pairs;
 	static ParallelTeam team = new ParallelTeam();
 
-	public static SLP parallelPeraltaOptimize(final Matrix m, final int r, final int c, final int tieBreaker) throws Exception
+	public static SLP parallel_peralta_optimize(final Matrix m, final int r, final int c, final int tieBreaker) throws Exception
 	{
 		p_xorCount = 0;
 		solutionCircuit.reset();
@@ -61,7 +61,7 @@ public class ParallelMatrixOptimize
 		p_base = new Matrix(b, c);
 		
 		// Initialize the distance array and then get the ball rolling
-		p_dist = MatrixOptimize.computeDistance(p_base, m);
+		p_dist = MatrixOptimize.compute_distance(p_base, m);
 		for (int f = 0; f < p_dist.length; f++)
 		{
 			if (p_dist[f] == 0)
@@ -92,7 +92,7 @@ public class ParallelMatrixOptimize
 		// Create the parallel team so everything isn't anonymous
 		ParallelTeam team = new ParallelTeam();
 
-		while (MatrixOptimize.isZero(p_dist) == false)
+		while (MatrixOptimize.is_zero(p_dist) == false)
 		{
 			// disp("Here: " + p_n);
 			// error("Another go round");
@@ -122,10 +122,10 @@ public class ParallelMatrixOptimize
 									{
 										// t_newDist = new int[m.getDimension()];
 
-										int[] ssum = MatrixOptimize.addMod(p_base.getRow(t_ii), p_base.getRow(t_jj), 2);
-										if (!(p_base.containsRow(ssum)) && !MatrixOptimize.isZero(ssum))
+										int[] ssum = MatrixOptimize.add_mod(p_base.getRow(t_ii), p_base.getRow(t_jj), 2);
+										if (!(p_base.containsRow(ssum)) && !MatrixOptimize.is_zero(ssum))
 										{												
-											// int[] innersum = addMod(p_base.getRow(t_ii), p_base.getRow(t_jj), 2);
+											// int[] innersum = add_mod(p_base.getRow(t_ii), p_base.getRow(t_jj), 2);
 											// // Matrix newBase = p_base.copy();
 											// // newBase.appendRow(innersum);
 											// for (int k = 0; k < last; k++)
@@ -134,7 +134,7 @@ public class ParallelMatrixOptimize
 											// 	// p_newDist[k] = optimizedPeraltaDistance(newBase, t_fi);
 											// 	t_newDist[k] = optimizedPeraltaDistance(p_base, innersum, t_fi, p_dist[k]);
 											// }
-											int[] t_newDist = MatrixOptimize.optimizedComputeDistance(p_base, m, ssum, p_dist);
+											int[] t_newDist = MatrixOptimize.optimized_compute_distance(p_base, m, ssum, p_dist);
 											int newDistSum = MatrixOptimize.sum(t_newDist);
 											// disp("Sum for " + t_ii + "," + t_jj + " = " + newDistSum);
 											if (newDistSum < t_d)
@@ -185,14 +185,14 @@ public class ParallelMatrixOptimize
 			switch (tieBreaker)
 			{
 				case 0: // norm
-					maxNorm = MatrixOptimize.euclideanNorm(p_optimalDistances.get(0));
+					maxNorm = MatrixOptimize.euclidean_norm(p_optimalDistances.get(0));
 					p_optimalBase = p_optimalBases.get(0);
 					p_newDist = p_optimalDistances.get(0);
 					mi = p_pairs.get(0).i;
 					mj = p_pairs.get(0).j;
 					for (int i = 1; i < p_optimalDistances.size(); i++)
 					{
-						double norm = MatrixOptimize.euclideanNorm(p_optimalDistances.get(i));
+						double norm = MatrixOptimize.euclidean_norm(p_optimalDistances.get(i));
 						if (norm > maxNorm)
 						{
 							maxNorm = norm;
@@ -201,7 +201,7 @@ public class ParallelMatrixOptimize
 							mi = p_pairs.get(i).i;
 							mj = p_pairs.get(i).j;
 						}
-						else if (norm == maxNorm && MatrixOptimize.comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
+						else if (norm == maxNorm && MatrixOptimize.compare_pairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
 						{
 							maxNorm = norm;
 							p_optimalBase = p_optimalBases.get(i);
@@ -222,11 +222,11 @@ public class ParallelMatrixOptimize
 					mi = p_pairs.get(0).i;
 					mj = p_pairs.get(0).j;
 					// }
-					maxNorm = Math.pow(MatrixOptimize.euclideanNorm(p_optimalDistances.get(0)), 2);
+					maxNorm = Math.pow(MatrixOptimize.euclidean_norm(p_optimalDistances.get(0)), 2);
 					maxNorm = maxNorm - (double)largestDist;
 					for (int i = 1; i < p_optimalDistances.size(); i++)
 					{
-						double norm = Math.pow(MatrixOptimize.euclideanNorm(p_optimalDistances.get(i)), 2);
+						double norm = Math.pow(MatrixOptimize.euclidean_norm(p_optimalDistances.get(i)), 2);
 						norm = norm - (double)MatrixOptimize.largest(p_optimalDistances.get(i));
 						if (norm > maxNorm)
 						{
@@ -236,7 +236,7 @@ public class ParallelMatrixOptimize
 							mi = p_pairs.get(i).i;
 							mj = p_pairs.get(i).j;
 						}
-						else if (norm == maxNorm && MatrixOptimize.comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
+						else if (norm == maxNorm && MatrixOptimize.compare_pairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
 						{
 							maxNorm = norm;
 							p_optimalBase = p_optimalBases.get(i);
@@ -263,11 +263,11 @@ public class ParallelMatrixOptimize
 						}
 					}
 
-					maxNorm = Math.pow(MatrixOptimize.euclideanNorm(p_optimalDistances.get(0)), 2);
+					maxNorm = Math.pow(MatrixOptimize.euclidean_norm(p_optimalDistances.get(0)), 2);
 					maxNorm = maxNorm - (double)(firstLargestDist - secondLargestDist);
 					for (int i = 1; i < p_optimalDistances.size(); i++)
 					{
-						double norm = Math.pow(MatrixOptimize.euclideanNorm(p_optimalDistances.get(i)), 2);
+						double norm = Math.pow(MatrixOptimize.euclidean_norm(p_optimalDistances.get(i)), 2);
 						norm = norm - (double)(firstLargestDist - secondLargestDist);
 						if (norm > maxNorm)
 						{
@@ -277,7 +277,7 @@ public class ParallelMatrixOptimize
 							mi = p_pairs.get(i).i;
 							mj = p_pairs.get(i).j;
 						}
-						else if (norm == maxNorm && MatrixOptimize.comparePairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
+						else if (norm == maxNorm && MatrixOptimize.compare_pairs(p_pairs.get(i).i, p_pairs.get(i).j, mi, mj) <= 0)
 						{
 							maxNorm = norm;
 							p_optimalBase = p_optimalBases.get(i);
@@ -317,7 +317,7 @@ public class ParallelMatrixOptimize
 			p_xorCount++;
 			for (int f = 0; f < m.getDimension(); f++)
 			{
-				if (MatrixOptimize.areEqual(newBase.base, m.getRow(f)))
+				if (MatrixOptimize.are_equal(newBase.base, m.getRow(f)))
 				{
 					p_slp.add("y_" + f + " = " + "t_" + p_i);
 				}
