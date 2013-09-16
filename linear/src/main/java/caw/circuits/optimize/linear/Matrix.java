@@ -2,6 +2,10 @@ package caw.circuits.optimize.linear;
 
 import java.util.ArrayList;
 import java.math.BigInteger;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Matrix 
 {
@@ -157,6 +161,45 @@ public class Matrix
 		}
 
 		updateGateCount();
+	}
+
+	// Parse a matrix file, which is composed as follows:
+	// n m
+	// row 1
+	// row 2
+	// ...
+	// row n
+	// where each row is a vector (length m) of 0/1s separated by a space, e.g. 0 1 1 0
+	public static Matrix parseMatrixFile(String matrixFile) throws Exception, IOException, FileNotFoundException
+	{
+		ArrayList<Matrix> matrices = new ArrayList<Matrix>();
+		BufferedReader in = new BufferedReader(new FileReader(matrixFile)); 
+		String line = "";
+
+		Matrix mat = null;
+
+		while ((line = in.readLine()) != null && !line.isEmpty())
+		{
+			String[] data = line.split(" ");
+			int n = Integer.parseInt(data[0]);
+			int m = Integer.parseInt(data[1]);
+			line = in.readLine();
+			
+			ArrayList<int[]> rows = new ArrayList<int[]>();
+			int index = 0;
+			for (int i = 0; i < n; i++)
+			{
+				int[] row = new int[m];
+				for (int j = 0; j < m; j++)
+				{
+					row[j] = Integer.parseInt("" + line.charAt(index++));
+				}
+				rows.add(row);
+			}
+			mat = new Matrix(rows, n); // include the initial number of columns (variables)
+		}
+
+		return mat;
 	}
 
 	public Matrix copy() throws Exception

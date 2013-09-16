@@ -644,8 +644,8 @@ public class MatrixOptimize
 	{
 		ArrayList<int[]> sums = new ArrayList<int[]>(); // end is inclusive
 
-		disp("start/end = " + start + "," + end);
-		disp(base.toString());
+		// disp("start/end = " + start + "," + end);
+		// disp(base.toString());
 		walk_base = base.subMatrix(start, end + 1, 0, base.getLength());
 		int[] acc = new int[base.getLength()];
 		for (int j = 0; j < acc.length; j++) acc[j] = 0;
@@ -962,17 +962,32 @@ public class MatrixOptimize
 		int[] tbits = new int[T.length]; // automatically initialized to zero when malloc'd
 
 		// Check the base case - the size of A/B is one entry and the XOR is T
-		if (A.size() == 1 && B.size() == 1)
+		// we can't split the list that has one element
+
+		// System.out.println(A.toString());
+		// System.out.println(B.toString());
+
+		System.err.println(A.size() + ", " + B.size());
+
+		if (A.size() == 1 || B.size() == 1)
 		{
-			if (are_equal(XOR(A.get(0), B.get(0)), T))
+			for (int i = 0; i < A.size(); i++)
 			{
-				return new VectorPair(A.get(0), B.get(0)); // this pair added up to T
+				for (int j = 0; j < B.size(); j++)
+				{
+					if (are_equal(XOR(A.get(i), B.get(j)), T))
+					{
+						return new VectorPair(A.get(i), B.get(j)); // this pair added up to T
+					}
+				}
 			}
-			else
-			{
-				return null; // this pair didn't add up to T
-			}
+
+			// there wasn't a pair that added up
+			return null; // this pair didn't add up to T
 		}
+
+		// if either one of the lists is empty, then... whoops!
+		if (A.size() == 0 || B.size() == 0) return null;
 
 		for (int i = 0; i < tbits.length; i++)
 		{
@@ -1048,24 +1063,62 @@ public class MatrixOptimize
 		{
 			// Input target T is each row of m (the set of targets)
 			// k value is the corresponding index in the distance array
-			int[] fi = m.getRow(i);
+			int[] T = m.getRow(i);
 			int k = dist[i];
+			distance[i] = k;
 
 			// #1 p1 and p2 are pointers to the starts of each split
 			int sp1 = 0;                             // 0 - 3/2 = 1, 3/2 + 1 = 2 - 3
 			int sp2 = (base.getDimension() / 2) + 1; // 0 - 4/2 = 2, 5/2 + 1 = 3 - 4
 
 			// #2 pick a random a (and corresponding b...)
-			Random prng = new Random(System.currentTimeMillis());
-			int a = prng.nextInt(k);
-			int b = k - a;
+			// Random prng = new Random(System.currentTimeMillis());
+			VectorPair pair = null;
+			int a = 0;
+			int b = k;
+			while (pair == null && b >= 0)
+			{
+				error("Trying a/b = " + a + "/" + b);
 
-			// #3 use hamiltonian path method to commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
-			ArrayList<int[]> Alist = hamiltonian_sums(base, newBase, 0, sp2 - 1, a); // |Alist| = C(n/2,a)
-			ArrayList<int[]> Blist = hamiltonian_sums(base, newBase, sp2, base.getDimension() - 1, b); // |Blist| = C(n/2,b)
+				// #3 use hamiltonian path method to commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
+				ArrayList<int[]> Alist = hamiltonian_sums(base, newBase, 0, sp2 - 1, a); // |Alist| = C(n/2,a)
+				ArrayList<int[]> Blist = hamiltonian_sums(base, newBase, sp2, base.getDimension() - 1, b); // |Blist| = C(n/2,b)
 
-			// #4 invoke heuristic with Alist and Blist
-			// TODO: see split_subset_sum method above
+				// #4 invoke heuristic with Alist and Blist
+				// TODO: see split_subset_sum method above
+				pair = split_subset_sum(T, Alist, Blist);
+				if (pair == null)
+				{
+					error("GAH! Didn't find a matching summation...");
+				}
+				else // found a matching sum, so the distance can decrease by at most one
+				{
+					dist[i] = dist[i] - 1;
+					break;
+				}
+
+				a++;
+				b--;
+				// int[] T, ArrayList<int[]> A, ArrayList<int[]> B
+			}
+
+
+			// int a = prng.nextInt(k);
+			// int b = k - a;
+
+			// // #3 use hamiltonian path method to commpute sums of all a and b elements from each list and store in another list A/B - resulting in A = C(n/2,a) and B = C(n/2,b) sized lists
+			// ArrayList<int[]> Alist = hamiltonian_sums(base, newBase, 0, sp2 - 1, a); // |Alist| = C(n/2,a)
+			// ArrayList<int[]> Blist = hamiltonian_sums(base, newBase, sp2, base.getDimension() - 1, b); // |Blist| = C(n/2,b)
+
+			// // #4 invoke heuristic with Alist and Blist
+			// // TODO: see split_subset_sum method above
+			// VectorPair pair = split_subset_sum(T, Alist, Blist);
+			// if (pair == null)
+			// {
+			// 	System.err.println("GAH! Didn't find a matching summation...");
+			// 	throw new Exception("halt and examine");
+			// }
+			// int[] T, ArrayList<int[]> A, ArrayList<int[]> B
 		}
 
 		return distance;
