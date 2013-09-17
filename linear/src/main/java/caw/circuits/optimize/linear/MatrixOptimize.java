@@ -1324,7 +1324,7 @@ public class MatrixOptimize
 		return new BasePair(optimalBase, optimalDist, new Pair(mi, mj));
 	}
 
-	public static SLP peralta_optimize(Matrix m, int r, int c, int tieBreaker, int distanceMethod) throws Exception
+	public static SLPStrings peralta_optimize(Matrix m, int r, int c, int tieBreaker, int distanceMethod) throws Exception
 	{
 		ArrayList<String> slp = new ArrayList<String>();
 
@@ -1385,7 +1385,7 @@ public class MatrixOptimize
 			dist = newBase.dist;
 		}
 
-		return new SLP(slp, xorCount, 0); // no ANDs required
+		return new SLPStrings(slp, xorCount, 0); // no ANDs required
 	}
 
 	public static ArrayList<MatrixState> exhaustive_optimize(Matrix currMatrix, int oldi, int oldj, int n, int lastcol) throws Exception
@@ -1500,7 +1500,7 @@ public class MatrixOptimize
 		return rows;	
 	}
 
-	// this builds an SLP...
+	// this builds an SLPStrings...
 	public static ArrayList<String> bernstein_optimize(ArrayList<Vector> rows, int n, int p, int q) throws Exception
 	{
 		ArrayList<String> slp = new ArrayList<String>();
@@ -1632,16 +1632,16 @@ public class MatrixOptimize
 		// int[][] test4 = {{1,1,1,0,0},{0,1,0,1,1},{1,0,1,1,1},{0,1,1,1,0},{1,1,0,1,0},{0,1,1,1,1}};
 		// Matrix m4 = new Matrix(test4, 5);
 		// disp(m4.toString());
-		// SLP slp4 = peralta_optimize(m4, 6, 5, 0);
-		// SLP slp4 = parallelperalta_optimize(m4, 6, 5, 0);
+		// SLPStrings slp4 = peralta_optimize(m4, 6, 5, 0);
+		// SLPStrings slp4 = parallelperalta_optimize(m4, 6, 5, 0);
 		// disp_strings(slp4.lines);
 		// long start = System.currentTimeMillis();
-		// SLP slp5 = parallelperalta_optimize(m4, 6, 5, 0);
+		// SLPStrings slp5 = parallelperalta_optimize(m4, 6, 5, 0);
 		// long end = System.currentTimeMillis();
 		// disp("" + (end - start));
 		// disp_strings(slp5.lines);
 		// start = System.currentTimeMillis();
-		// SLP slp6 = parallelperalta_optimize_v2(m4, 6, 5, 0);
+		// SLPStrings slp6 = parallelperalta_optimize_v2(m4, 6, 5, 0);
 		// end = System.currentTimeMillis();
 		// disp("" + (end - start));
 		// disp_strings(slp6.lines);
@@ -1729,7 +1729,7 @@ public class MatrixOptimize
 
 			error("STARTING PERALTA TEST - TIE 0, RECURSIVE DISTANCE");
 			long start4 = System.currentTimeMillis();
-			SLP slp4 = peralta_optimize(m, m.getDimension(), m.getLength(), 0, 0);
+			SLPStrings slp4 = peralta_optimize(m, m.getDimension(), m.getLength(), 0, 0);
 			long end4 = System.currentTimeMillis();
 			tgc = slp4.xc;
 			gc = tgc < gc ? tgc : gc;
@@ -1739,7 +1739,7 @@ public class MatrixOptimize
 
 			error("STARTING PERALTA TEST - TIE 0, GRAPH DISTANCE");
 			long start5 = System.currentTimeMillis();
-			SLP slp5 = peralta_optimize(m, m.getDimension(), m.getLength(), 0, 1);
+			SLPStrings slp5 = peralta_optimize(m, m.getDimension(), m.getLength(), 0, 1);
 			long end5 = System.currentTimeMillis();
 			tgc = slp5.xc;
 			gc = tgc < gc ? tgc : gc;

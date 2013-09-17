@@ -1,6 +1,7 @@
 package caw.circuits.optimize.linear;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
@@ -8,39 +9,155 @@ import java.io.IOException;
 
 public class SLP
 {
-	public ArrayList<String> lines;
-	public ArrayList<SLPLine> loadedLines;
-	public int inputVars;
-	public int outputVars;
-	public int xc;
-	public int ac;
+	public enum SLPOperator { SLP_ADD, SLP_MULT, SLP_XNOR, SLP_OP_INVALID };
+	public static char[] SLPOperatorSymbol = {'+', 'x', '#'};
 
-	public SLP(ArrayList<String> lines, int xc, int ac)
+	// composed of SLP lines, which are SLP elements with an operand
+
+	public ArrayList<SLPLine> lines;
+	// public ArrayList<SLPElement> ins;
+	// public ArrayList<SLPElement> vars;
+	// public ArrayList<SLPElement> outs;
+
+	public SLP(ArrayList<SLPLine> lines)
 	{
 		this.lines = lines;
-		this.xc = xc;
-		this.ac = ac;
+		// this.lines = new ArrayList<SLPLine>();
+		// for (SLPLine l : lines) this.lines.add(l);
+		// this.ins = ins;
+		// this.ins = new ArrayList<SLPElement>();
+		// for (SLPElement e : ins) this.ins.add(e);
+		// this.vars = vars;
+		// this.vars = new ArrayList<SLPElement>();
+		// for (SLPElement e : vars) this.vars.add(e);
+		// this.outs = outs;
+		// this.outs = new ArrayList<SLPElement>();
+		// for (SLPElement e : outs) this.outs.add(e);
 	}
 
-	// Parse an SLP file, which is composed of an arbitrary number of lines
-	// x chars denote input vector elements
-	// t chars denote temp variables (bits)
-	// y chars denote output vector elements
-	public static void parseSlpFile(String slpFile) throws IOException, FileNotFoundException
+	// SLP bitwise operations
+	public int BIT_ADD(int v1, int v2)
 	{
-		ArrayList<Matrix> matrices = new ArrayList<Matrix>();
-		BufferedReader in = new BufferedReader(new FileReader(slpFile)); 
-		int numInputs = 0;
-		int numOutputs = 0;
-		String line = "";
+		return (v1 ^ v2);
+	}
+	public int BIT_MULT(int v1, int v2)
+	{
+		return (v1 & v2);
+	}
+	public int BIT_XNOR(int v1, int v2)
+	{
+		if (v1 == v2) return 1;
+		else return 0;
+	}
+	public int BIT_NEGATE(int v1)
+	{
+		if (v1 == 1) return 0;
+		else return 1;
+	}
 
-		// Loop until we reach the end
-		while ((line = in.readLine()) != null && !line.isEmpty())
+	public void load_inputs(ArrayList<SLPElement> inputs)
+	{
+		for (int i = 0; i < lines.size(); i++)
 		{
-			// line: out = op1 OP op2
-			// check out, op1, op2 to determine what type of variable
+			for (SLPElement e : inputs)
+			{
+				if (lines.get(i).o1.name.equals(e.name))
+				{
+					lines.get(i).o1.val = e.val;
+				}
+				if (lines.get(i).o2.name.equals(e.name))
+				{
+					lines.get(i).o2.val = e.val;
+				}
+			}
+		}
+	}
 
-			// TODO: want to make this code a little better... try and represent SLPs as DAGs using composite pattern
+	public ArrayList<Integer> extract_outputs(ArrayList<String> outputs)
+	{
+		ArrayList<Integer> outputValues = new ArrayList<Integer>();
+		for (int i = 0; i < lines.size(); i++)
+		{
+			for (String e : outputs)
+			{
+				if (lines.get(i).out.name.equals(e))
+				{
+					outputValues.add(lines.get(i).out.val);
+				}
+			}
+		}
+		return outputValues;
+	}
+
+	public void execute() throws Exception
+	{
+		// debug
+		System.err.println("Executing the SLP of size: " + lines.size());
+
+		try
+		{
+			for (int i = 0; i < lines.size(); i++)
+			{
+				SLPLine line = lines.get(i);
+
+				// Check for negation special case first
+				if (line.o1.name.equals("ONE"))
+				{
+					line.out.val = BIT_NEGATE(line.o2.val);
+				}
+				else if (line.o2.name.equals("ONE"))
+				{
+					line.out.val = BIT_NEGATE(line.o1.val);
+				}
+				else
+				{
+					switch (line.op)
+					{
+						case SLP_ADD:
+							line.out.val = BIT_ADD(line.o1.val, line.o2.val);
+							break;
+
+						case SLP_MULT:
+							line.out.val = BIT_MULT(line.o1.val, line.o2.val);
+							break;
+
+						case SLP_XNOR:
+							line.out.val = BIT_XNOR(line.o1.val, line.o2.val);
+							break;
+						default:
+							throw new Exception("Error: invalid SLP operator encountered: " + line.op);
+					}
+				}
+			}
+		} 
+		catch (Exception e)
+		{
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	public static SLPOperator find_matching_operator(String sym)
+	{
+		// debug
+		System.err.println("Finding operator match for: " + sym);
+
+		if (sym.equals("" + SLPOperatorSymbol[0]))
+		{
+			return SLPOperator.SLP_ADD;
+		}
+		else if (sym.equals("" + SLPOperatorSymbol[1]))
+		{
+			return SLPOperator.SLP_MULT;
+		}
+		else if (sym.equals("" + SLPOperatorSymbol[2]))
+		{
+			return SLPOperator.SLP_XNOR;
+		}
+		else
+		{
+			return SLPOperator.SLP_OP_INVALID;
 		}
 	}
 
@@ -72,17 +189,12 @@ public class SLP
 	@Override
 	public int hashCode()
 	{
-		return lines.hashCode() + xc + ac;
+		return lines.hashCode();
 	}
 
 	@Override
 	public String toString()
 	{
-		StringBuilder builder = new StringBuilder();
-		for (String s : lines)
-		{
-			builder.append(s);
-		}
-		return builder.toString();
+		return "TODO";
 	}
 }

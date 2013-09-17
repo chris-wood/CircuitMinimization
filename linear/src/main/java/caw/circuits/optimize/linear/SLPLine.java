@@ -2,27 +2,23 @@ package caw.circuits.optimize.linear;
 
 public class SLPLine
 {
-	public static enum SLPOperator { SLP_ADD, SLP_MULT };
-	public static char[] SLPOperatorSymbol = {'+', 'x'};
-
 	// Vars for the line
-	public String out;
-	public String o1;
-	public String o2;
-	public SLPOperator op;
+	public SLPElement out;
+	public SLPElement o1;
+	public SLPElement o2;
+	public SLP.SLPOperator op;
 
-	public SLPLine(String out, String o1, String o2, SLPOperator op)
+	public SLPLine(SLPElement out, SLPElement o1, SLPElement o2, SLP.SLPOperator op)
 	{
-		this.out = new String(out);
-		this.o1 = new String(o1);
-		this.o2 = new String(o2);
+		this.out = out;
+		this.o1 = o1;
+		this.o2 = o2;
 		this.op = op;
 	}
 
 	@Override
 	public String toString()
 	{
-		// return out + " = " + o1 + " " + SLPOperatorSymbol[op] + " " + o2; 
-		return "DERP";
+		return out.name + " = " + o1.name + " " + SLP.SLPOperatorSymbol[op.ordinal()] + " " + o2.name; 
 	}
 }

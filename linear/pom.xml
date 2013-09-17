@@ -61,6 +61,18 @@
               <goal>one-jar</goal>
             </goals>
           </execution>
+          <execution>
+          <id>slp-parser</id>
+            <configuration>
+              <mainClass>caw.circuits.optimize.linear.SLPParser</mainClass>
+              <attachToBuild>true</attachToBuild>
+              <classifier>onejar</classifier>
+              <filename>SLPParser.jar</filename>
+            </configuration>
+            <goals>
+              <goal>one-jar</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
     </plugins>
