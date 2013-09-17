@@ -493,6 +493,21 @@ public class Matrix
 		return false;
 	}
 
+	public int[] multiply(int[] v)
+	{
+		int[] z = new int[this.getDimension()];
+		for (int i = 0; i < this.getDimension(); i++) // entry in output vector
+		{
+			int prod = 1;
+			for (int j = 0; j < this.getLength(); j++) // one product
+			{
+				prod = (prod + (v[j] * m[i][j])) % 2;
+			}
+			z[i] = prod;
+		}
+		return z;
+	}
+
 	public String toString()
 	{
 		String result = "";
