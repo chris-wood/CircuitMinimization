@@ -32,7 +32,7 @@ public class ParallelMatrixOptimize
 	static ArrayList<Pair> p_pairs;
 	static ParallelTeam team = new ParallelTeam();
 
-	public static SLP parallel_peralta_optimize(final Matrix m, final int r, final int c, final int tieBreaker) throws Exception
+	public static SLPStrings parallel_peralta_optimize(final Matrix m, final int r, final int c, final int tieBreaker) throws Exception
 	{
 		p_xorCount = 0;
 		solutionCircuit.reset();
@@ -346,6 +346,6 @@ public class ParallelMatrixOptimize
 			// disp(p_dist);
 		}
 
-		return new SLP(p_slp, p_xorCount, 0); // no ANDs required
+		return new SLPStrings(p_slp, p_xorCount, 0); // no ANDs required
 	}
 }

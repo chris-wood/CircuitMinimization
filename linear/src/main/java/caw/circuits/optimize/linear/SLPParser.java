@@ -219,6 +219,7 @@ public class SLPParser
 				for (int i = 0; i < inputs.size(); i++)
 				{
 					inputVals.add(inputs.get(i).val);
+					System.err.println(inputs.get(i).name + ": " + inputs.get(i).val);
 				}
 				System.out.println("-----");
 				System.out.println("Input:  " + inputVals.toString());
@@ -235,6 +236,10 @@ public class SLPParser
 				}
 				ArrayList<Integer> outputVals = slp.extract_outputs(outputNames);
 				System.out.println("Output: " + outputVals.toString());
+				for (int i = 0; i < outputs.size(); i++)
+				{
+					System.err.println(outputs.get(i).name + ": " + outputVals.get(i));
+				}
 				System.out.println("-----\n");
 
 				// See if there's more input to parse...
@@ -283,6 +288,7 @@ public class SLPParser
 		catch (Exception e)
 		{
 			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }

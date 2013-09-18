@@ -73,6 +73,18 @@
               <goal>one-jar</goal>
             </goals>
           </execution>
+          <execution>
+          <id>verify-linear-slp</id>
+            <configuration>
+              <mainClass>caw.circuits.optimize.linear.VerifyLinearSLP</mainClass>
+              <attachToBuild>true</attachToBuild>
+              <classifier>onejar</classifier>
+              <filename>VerifyLinearSLP.jar</filename>
+            </configuration>
+            <goals>
+              <goal>one-jar</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
     </plugins>

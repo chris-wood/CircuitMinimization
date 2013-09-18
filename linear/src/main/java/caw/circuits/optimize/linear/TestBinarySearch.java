@@ -76,25 +76,30 @@ public class TestBinarySearch
 				// Run both distance computations
 				error("STARTING PERALTA HEURISTIC TEST - TIE 0, RECURSIVE DISTANCE");
 				long start4 = System.currentTimeMillis();
-				SLP slp4 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 0);
+				SLPStrings slp4 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 0);
 				long end4 = System.currentTimeMillis();
 				error("Elapsed time: " + (end4 - start4));
 
+				for (String s : slp4.lines)
+				{
+					error(s);
+				}
+
 				error("STARTING PERALTA HEURISTIC TEST - TIE 0, GRAPH DISTANCE WITH BIT ARRAYS");
 				long start5 = System.currentTimeMillis();
-				SLP slp5 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 1);
+				SLPStrings slp5 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 1);
 				long end5 = System.currentTimeMillis();
 				error("Elapsed time: " + (end5 - start5));
 
-				error("STARTING PERALTA HEURISTIC TEST - TIE 0, SPLIT SUBSET SUM");
-				long start7 = System.currentTimeMillis();
-				SLP slp7 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 2);
-				long end7 = System.currentTimeMillis();
-				error("Elapsed time: " + (end7 - start7));
+				// error("STARTING PERALTA HEURISTIC TEST - TIE 0, SPLIT SUBSET SUM");
+				// long start7 = System.currentTimeMillis();
+				// SLPStrings slp7 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 2);
+				// long end7 = System.currentTimeMillis();
+				// error("Elapsed time: " + (end7 - start7));
 
 				error("STARTING PERALTA HEURISTIC TEST - TIE 0, PARALLEL RECURSIVE DISTANCE");
 				long start6 = System.currentTimeMillis();
-				SLP slp6 = ParallelMatrixOptimize.parallel_peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0);
+				SLPStrings slp6 = ParallelMatrixOptimize.parallel_peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0);
 				long end6 = System.currentTimeMillis();
 				error("Elapsed time: " + (end6 - start6));
 
@@ -103,22 +108,23 @@ public class TestBinarySearch
 				error(end4 - start4 + "ms");
 				error("Graph: " + slp5.xc);
 				error(end5 - start5 + "ms");
-				error("Split: " + slp7.xc);
-				error(end7 - end7 + "ms");
+				// error("Split: " + slp7.xc);
+				// error(end7 - end7 + "ms");
 				// error("GRAPH NUMTRIES: " + MatrixOptimize.numTries);
 				error("Parallel: " + slp6.xc);
 				error(end6 - start6 + "ms");
-				if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false || slp4.lines.equals(slp7.lines) == false)
+				if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false) //|| slp4.lines.equals(slp7.lines) == false)
 				{
-					error("SLPs did not match. Terminating.");
-					error("" + slp4.lines.size() + "," + slp5.lines.size() + "," + slp7.lines.size() + "," + slp6.lines.size());
-					error("SLP #1");
+					error("SLPStringss did not match. Terminating.");
+					// error("" + slp4.lines.size() + "," + slp5.lines.size() + "," + slp7.lines.size() + "," + slp6.lines.size());
+					error("" + slp4.lines.size() + "," + slp5.lines.size() + "," + slp6.lines.size());
+					error("SLPStrings #1");
 					error(slp4.lines.toString());
-					error("SLP #2");
+					error("SLPStrings #2");
 					error(slp5.lines.toString());
-					error("SLP #3");
-					error(slp7.lines.toString());
-					error("SLP #4");
+					// error("SLPStrings #3");
+					// error(slp7.lines.toString());
+					error("SLPStrings #4");
 					error(slp6.lines.toString());
 					System.exit(-1);
 				}
@@ -166,45 +172,47 @@ public class TestBinarySearch
 						// Run both distance computations
 						error("STARTING PERALTA HEURISTIC TEST - TIE 0, RECURSIVE DISTANCE");
 						long start4 = System.currentTimeMillis();
-						SLP slp4 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 0);
+						SLPStrings slp4 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 0);
 						long end4 = System.currentTimeMillis();
 						error("Elapsed time: " + (end4 - start4));
 
 						error("STARTING PERALTA HEURISTIC TEST - TIE 0, GRAPH DISTANCE WITH BIT ARRAYS");
 						long start5 = System.currentTimeMillis();
-						SLP slp5 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 1);
+						SLPStrings slp5 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 1);
 						long end5 = System.currentTimeMillis();
 						error("Elapsed time: " + (end5 - start5));
 
-						error("STARTING PERALTA HEURISTIC TEST - TIE 0, SPLIT SUBSET SUM");
-						long start7 = System.currentTimeMillis();
-						SLP slp7 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 2);
-						long end7 = System.currentTimeMillis();
-						error("Elapsed time: " + (end7 - start7));
+						// error("STARTING PERALTA HEURISTIC TEST - TIE 0, SPLIT SUBSET SUM");
+						// long start7 = System.currentTimeMillis();
+						// SLPStrings slp7 = MatrixOptimize.peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0, 2);
+						// long end7 = System.currentTimeMillis();
+						// error("Elapsed time: " + (end7 - start7));
 
 						error("STARTING PERALTA HEURISTIC TEST - TIE 0, PARALLEL RECURSIVE DISTANCE");
 						long start6 = System.currentTimeMillis();
-						SLP slp6 = ParallelMatrixOptimize.parallel_peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0);
+						SLPStrings slp6 = ParallelMatrixOptimize.parallel_peralta_optimize(sample, sample.getDimension(), sample.getLength(), 0);
 						long end6 = System.currentTimeMillis();
 						error("Elapsed time: " + (end6 - start6));
 
 						// Make sure we actually have the same result for both
 						error("Recursive: " + slp4.xc);
 						error("Graph: " + slp5.xc);
-						error("Split: " + slp7.xc);
+						// error("Split: " + slp7.xc);
 						error("Parallel: " + slp6.xc);
-						disp(t + "," + n + "," + m + "," + bias + "," + (end4 - start4) + "," + (end5 - start5) + "," + (end7 - start7) + "," + (end6 - start6));
-						if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false || slp4.lines.equals(slp7.lines) == false)
+						// disp(t + "," + n + "," + m + "," + bias + "," + (end4 - start4) + "," + (end5 - start5) + "," + (end7 - start7) + "," + (end6 - start6));
+						disp(t + "," + n + "," + m + "," + bias + "," + (end4 - start4) + "," + (end5 - start5) + "," + (end6 - start6));
+						if (slp4.lines.equals(slp5.lines) == false || slp4.lines.equals(slp6.lines) == false) // || slp4.lines.equals(slp7.lines) == false)
 						{
-							error("SLPs did not match. Terminating.");
-							error("" + slp4.lines.size() + "," + slp5.lines.size() + "," + slp7.lines.size() + "," + slp6.lines.size());
-							error("SLP #1");
+							error("SLPStringss did not match. Terminating.");
+							// error("" + slp4.lines.size() + "," + slp5.lines.size() + "," + slp7.lines.size() + "," + slp6.lines.size());
+							error("" + slp4.lines.size() + "," + slp5.lines.size() + "," + slp6.lines.size());
+							error("SLPStrings #1");
 							error(slp4.lines.toString());
-							error("SLP #2");
+							error("SLPStrings #2");
 							error(slp5.lines.toString());
-							error("SLP #3");
-							error(slp7.lines.toString());
-							error("SLP #4");
+							// error("SLPStrings #3");
+							// error(slp7.lines.toString());
+							error("SLPStrings #4");
 							error(slp6.lines.toString());
 							System.exit(-1);
 						}

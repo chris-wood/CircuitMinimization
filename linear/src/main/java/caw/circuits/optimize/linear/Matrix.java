@@ -1,6 +1,7 @@
 package caw.circuits.optimize.linear;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.math.BigInteger;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -174,30 +175,27 @@ public class Matrix
 	{
 		ArrayList<Matrix> matrices = new ArrayList<Matrix>();
 		BufferedReader in = new BufferedReader(new FileReader(matrixFile)); 
-		String line = "";
+		String line = in.readLine();
 
-		Matrix mat = null;
+		Scanner ls = new Scanner(line);
+		int n = Integer.parseInt(ls.next());
+		int m = Integer.parseInt(ls.next());
 
-		while ((line = in.readLine()) != null && !line.isEmpty())
+		ArrayList<int[]> rows = new ArrayList<int[]>();
+		for (int i = 0; i < n; i++)
 		{
-			String[] data = line.split(" ");
-			int n = Integer.parseInt(data[0]);
-			int m = Integer.parseInt(data[1]);
 			line = in.readLine();
+			ls = new Scanner(line);
 			
-			ArrayList<int[]> rows = new ArrayList<int[]>();
-			int index = 0;
-			for (int i = 0; i < n; i++)
+			int[] row = new int[m];
+			for (int j = 0; j < m; j++)
 			{
-				int[] row = new int[m];
-				for (int j = 0; j < m; j++)
-				{
-					row[j] = Integer.parseInt("" + line.charAt(index++));
-				}
-				rows.add(row);
+				row[j] = Integer.parseInt(ls.next());
 			}
-			mat = new Matrix(rows, n); // include the initial number of columns (variables)
+			rows.add(row);
 		}
+
+		Matrix mat = new Matrix(rows, n); // include the initial number of columns (variables)
 
 		return mat;
 	}
@@ -498,7 +496,7 @@ public class Matrix
 		int[] z = new int[this.getDimension()];
 		for (int i = 0; i < this.getDimension(); i++) // entry in output vector
 		{
-			int prod = 1;
+			int prod = 0;
 			for (int j = 0; j < this.getLength(); j++) // one product
 			{
 				prod = (prod + (v[j] * m[i][j])) % 2;

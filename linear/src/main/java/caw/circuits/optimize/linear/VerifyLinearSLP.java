@@ -16,6 +16,17 @@ public class VerifyLinearSLP
 		return true;
 	}
 
+	public static String str(int[] v)
+	{
+		String s = "[ ";
+		for (int i = 0; i < v.length; i++) 
+		{
+			s = s + v[i] + " ";
+		}
+		s = s + "]";
+		return s;
+	}
+
 	public static boolean are_equal(int[] v1, int[] v2) throws Exception
 	{
 		if (v1.length != v2.length) throw new Exception("Vector dimensions don't match");
@@ -58,6 +69,7 @@ public class VerifyLinearSLP
 		do
 		{	
 			// Compute the output from this input
+			System.out.println("Computing: " + str(inputs));
 			int[] slpOut = parser.execute(inputs);
 			int[] matOut = mat.multiply(inputs);
 
@@ -66,6 +78,8 @@ public class VerifyLinearSLP
 				ArrayList<Integer> iv = new ArrayList<Integer>();
 				for (int i = 0; i < inputs.length; i++) iv.add(inputs[i]);
 				System.out.println("SLP and Matrix don't match on input: " + iv.toString());
+				System.out.println("SLP: " + str(slpOut));
+				System.out.println("MAT: " + str(matOut));
 				System.exit(-1);
 			}
 
@@ -85,6 +99,6 @@ public class VerifyLinearSLP
 		} while(!(all_zeros(inputs)));
 
 		// made it this far... they must compute the same result!
-		System.out.println("All inputs match");
+		System.out.println("All inputs match. SLP and Matrix compute the same value.");
 	}
 }

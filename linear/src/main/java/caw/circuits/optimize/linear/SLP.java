@@ -76,15 +76,18 @@ public class SLP
 	public ArrayList<Integer> extract_outputs(ArrayList<String> outputs)
 	{
 		ArrayList<Integer> outputValues = new ArrayList<Integer>();
-		for (int i = 0; i < lines.size(); i++)
+		for (String e : outputs)
 		{
-			for (String e : outputs)
+			// System.err.println("Loading output from: " + e);
+			for (int i = 0; i < lines.size(); i++)
 			{
+			
 				if (lines.get(i).out.name.equals(e))
 				{
 					outputValues.add(lines.get(i).out.val);
 				}
 			}
+			// System.err.println("Value: " + outputValues.get(outputValues.size() - 1));
 		}
 		return outputValues;
 	}
@@ -109,6 +112,16 @@ public class SLP
 				{
 					line.out.val = BIT_NEGATE(line.o1.val);
 				}
+
+				// Handle direct assignment case now
+				if (line.o1.name.equals("!"))
+				{
+					line.out.val = line.o2.val;
+				}
+				else if (line.o2.name.equals("!"))
+				{
+					line.out.val = line.o1.val;
+				}
 				else
 				{
 					switch (line.op)
@@ -128,6 +141,8 @@ public class SLP
 							throw new Exception("Error: invalid SLP operator encountered: " + line.op);
 					}
 				}
+
+				System.err.println(line.out.name + " <= " + line.out.val);
 			}
 		} 
 		catch (Exception e)
