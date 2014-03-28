@@ -1871,20 +1871,23 @@ public class MatrixOptimize_validate
 
 				// Parse away...
 				line = s.nextLine();
-				while (line.length() > 0)
+//				disp(line);
+//				disp(line.indexOf("*"));
+				while (line.length() > 0 && line.indexOf("*") < 0)
 				{
-					// disp(line);
+//					disp(line);
 					String[] split1 = line.split(" : ");
 					specList.add(Integer.parseInt(split1[0]));
 
 					// parse the RHS
 					String[] split2 = split1[1].split(" = ");
 					String var = split2[0];
+//					disp(var);
 
 					// determine if AND or XOR
-					if (split2[1].indexOf("x") == -1) // XOR
+					if (split2[1].indexOf(" x ") == -1) // XOR
 					{
-						String[] vsplit = split2[1].split(" \\+ ");
+						String[] vsplit = split2[1].split("\\+");
 						String v1 = vsplit[0].trim();
 						String v2 = vsplit[1].trim();
 
@@ -1981,9 +1984,12 @@ public class MatrixOptimize_validate
 					}
 					else // AND
 					{
+//						disp(split2[1]);
 						String[] vsplit = split2[1].split(" x ");
 						String v1 = vsplit[0].trim();
 						String v2 = vsplit[1].trim();
+//						disp(v1);
+//						disp(v2);
 
 						int[] vs1;
 						int[] vs2;
@@ -2089,23 +2095,26 @@ public class MatrixOptimize_validate
 						break;
 					}
 				}
-
-				if (specList.get(specList.size() - 1) != target)
+				
+				if (!specList.isEmpty())
 				{
-					System.err.println("Output spectrum did not match target spectrum.");
-					return false;
-				}
-
-				String bs = "";
-				for (int i = 0; i < targetSpectrum.length; i++) bs = bs + targetSpectrum[i];
-				Integer equivSpectrum = Integer.parseInt(bs, 2);
-				disp("Computed and target:");
-				disp("" + equivSpectrum.intValue());
-				disp("" + target);
-				if (target != equivSpectrum.intValue())
-				{
-					System.err.println("Target not computed correctly for: " + target);
-					return false;
+					if (specList.get(specList.size() - 1) != target)
+					{
+						System.err.println("Output spectrum did not match target spectrum.");
+						return false;
+					}
+					
+					String bs = "";
+					for (int i = 0; i < targetSpectrum.length; i++) bs = bs + targetSpectrum[i];
+					Integer equivSpectrum = Integer.parseInt(bs, 2);
+					disp("Computed and target:");
+					disp("" + equivSpectrum.intValue());
+					disp("" + target);
+					if (target != equivSpectrum.intValue())
+					{
+						System.err.println("Target not computed correctly for: " + target);
+						return false;
+					}
 				}
 			}
 		}
@@ -2346,14 +2355,11 @@ public class MatrixOptimize_validate
 		}
 		catch (NumberFormatException e)
 		{
-			error("Usage: java MatrixOptimize_validate [mode] <ops>");
-			error("   - [0] no argument will cause the hard-coded test cases to run");
-			error("   - [1] file contains a list of file names that contain matrices to optimize");
-			error("   - [2] lower bound, upper bound, and header for all files - will write a _count file for each index");
-			error("   - [3] run validation on given filename");
+			e.printStackTrace();
 		}
 		catch (IndexOutOfBoundsException e)
 		{
+			e.printStackTrace();
 			error("Usage: java MatrixOptimize_validate [mode] <ops>");
 			error("   - [0] no argument will cause the hard-coded test cases to run");
 			error("   - [1] file contains a list of file names that contain matrices to optimize");
