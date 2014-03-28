@@ -1,3 +1,5 @@
+package caw.circuits.optimize.linear;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -19,7 +21,7 @@ import edu.rit.pj.reduction.IntegerOp;
 import edu.rit.pj.Comm;
 import edu.rit.pj.BarrierAction;
 
-public class MatrixOptimize_new
+public class MatrixOptimize_validate
 {
 	static void error(String s) { System.err.println(s); }
 	static void disp(String s) { System.out.println(s); }
@@ -2335,7 +2337,7 @@ public class MatrixOptimize_new
 		}
 		else
 		{	
-			error("Usage: java MatrixOptimize_new [file]");
+			error("Usage: java MatrixOptimize_validate [file]");
 			error("   - [0] no argument will cause the hard-coded test cases to run");
 			error("   - [1] file contains a list of file names that contain matrices to optimize");
 			error("   - [2] lower bound, upper bound, and header for all files - will write a _count file for each index");
