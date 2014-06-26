@@ -1876,11 +1876,13 @@ public class MatrixOptimize_validate
 				while (line.length() > 0 && line.indexOf("*") < 0)
 				{
 //					disp(line);
-					String[] split1 = line.split(" : ");
-					specList.add(Integer.parseInt(split1[0]));
+					// String[] split1 = line.split(" : ");
+					String split1 = line;
+					// specList.add(Integer.parseInt(split1[0]));
 
 					// parse the RHS
-					String[] split2 = split1[1].split(" = ");
+					// String[] split2 = split1[1].split(" = ");
+					String[] split2 = split1.split(" = ");
 					String var = split2[0];
 //					disp(var);
 
@@ -2096,30 +2098,29 @@ public class MatrixOptimize_validate
 					}
 				}
 				
-				if (!specList.isEmpty())
+				if (targetSpectrum != null)
 				{
-					if (specList.get(specList.size() - 1) != target)
+					int computedTarget = bitsToInt(targetSpectrum);
+					if (computedTarget != target)
 					{
-						System.err.println("Output spectrum did not match target spectrum.");
+						System.err.println("Output spectrum did not match target spectrum: " + target);
 						return false;
 					}
-					
-					String bs = "";
-					for (int i = 0; i < targetSpectrum.length; i++) bs = bs + targetSpectrum[i];
-					Integer equivSpectrum = Integer.parseInt(bs, 2);
 					disp("Computed and target:");
-					disp("" + equivSpectrum.intValue());
-					disp("" + target);
-					if (target != equivSpectrum.intValue())
-					{
-						System.err.println("Target not computed correctly for: " + target);
-						return false;
-					}
+					disp("   " + computedTarget);
+					disp("   " + target);
 				}
 			}
 		}
 
 		return valid;
+	}
+
+	public static int bitsToInt(int[] bits)
+	{
+		String s = "";
+		for (int i = 0; i < bits.length; i++) s += bits[i];
+		return Integer.parseInt(s, 2);
 	}
 
 	public static void test() throws Exception

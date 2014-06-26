@@ -40,7 +40,7 @@
           <execution>
             <id>matrix-optimize</id>
             <configuration>
-              <mainClass>caw.circuits.optimize.linear.MatrixOptimize</mainClass>
+              <mainClass>caw.circuits.optimize.linear.MatrixOptimize_validate</mainClass>
               <attachToBuild>true</attachToBuild>
               <classifier>onejar</classifier>
               <filename>MatrixOptimize.jar</filename>
