@@ -25,6 +25,7 @@ public class MatrixOptimize_validate
 {
 	static void error(String s) { System.err.println(s); }
 	static void disp(String s) { System.out.println(s); }
+	static void displ(String s) { System.out.print(s); }
 	static void disp(int n) { System.out.println(n); }
 	static void disp(int[] v) {
 		System.out.print("[");
@@ -1843,10 +1844,16 @@ public class MatrixOptimize_validate
 		return slp;	
 	}
 
-	public static boolean validateCircuit(String fname) throws Exception
+	public static ArrayList<Integer> validateCircuit(String fname) throws Exception
 	{
-		boolean valid = true;
+		ArrayList<Integer> failures = new ArrayList<Integer>();
 		Scanner s = new Scanner(new BufferedReader(new FileReader(fname)));
+
+		// Initialize known signals
+		int[] a4 = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
+		int[] a3 = {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1};
+		int[] a2 = {0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1};
+		int[] a1 = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1};
 
 		while(s.hasNextLine())
 		{
@@ -1856,13 +1863,7 @@ public class MatrixOptimize_validate
 				// Extract target spectrum
 				String[] header = line.split(" ");
 				int target = Integer.parseInt(header[0].substring(1, header[0].length()));
-				disp("Parsing: " + target);
-
-				// Initialize known signals
-				int[] a4 = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
-				int[] a3 = {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1};
-				int[] a2 = {0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1};
-				int[] a1 = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1};
+				disp("\n*************\nParsing: " + target + "\n");
 
 				// Map for temporary variables
 				HashMap<String, int[]> varMap = new HashMap<String, int[]>();
@@ -1875,7 +1876,6 @@ public class MatrixOptimize_validate
 //				disp(line.indexOf("*"));
 				while (line.length() > 0 && line.indexOf("*") < 0)
 				{
-//					disp(line);
 					// String[] split1 = line.split(" : ");
 					String split1 = line;
 					// specList.add(Integer.parseInt(split1[0]));
@@ -1925,7 +1925,7 @@ public class MatrixOptimize_validate
 									break;
 								default:
 									System.err.println("Invalid variable ID");
-									return false;
+									throw new Exception("Invalid variable ID: " + target);
 							}
 						}
 
@@ -1956,14 +1956,14 @@ public class MatrixOptimize_validate
 									break;
 								default:
 									System.err.println("Invalid variable ID");
-									return false;
+									throw new Exception("Invalid variable ID: " + target);
 							}
 						}
 
 						if (vs1 == null && vs2 == null)
 						{
 							System.err.println("Both can't be null.");
-							return false;
+							throw new Exception("Both can't be null: " + target);
 						}
 
 						int[] newSpectrum;
@@ -2025,7 +2025,7 @@ public class MatrixOptimize_validate
 									break;
 								default:
 									System.err.println("Invalid variable ID");
-									return false;
+									throw new Exception("Invalid variable ID: " + target);
 							}
 						}
 
@@ -2056,14 +2056,14 @@ public class MatrixOptimize_validate
 									break;
 								default:
 									System.err.println("Invalid variable ID");
-									return false;
+									throw new Exception("Invalid variable ID: " + target);
 							}
 						}
 
 						if (vs1 == null && vs2 == null)
 						{
 							System.err.println("Both can't be null.");
-							return false;
+							throw new Exception("Both can't be null: " + target);
 						}
 
 						int[] newSpectrum;
@@ -2085,15 +2085,18 @@ public class MatrixOptimize_validate
 						targetSpectrum = newSpectrum;
 					}
 
+					// displ(line + ": ");
 					disp(targetSpectrum);
 
 					// Advance...
-					if (s.hasNext())
+					if (s.hasNextLine())
 					{
 						line = s.nextLine();
+						if (target == 31135) error(line);
 					}
 					else
 					{
+						if (target == 31135) error("breaking?");
 						break;
 					}
 				}
@@ -2103,17 +2106,20 @@ public class MatrixOptimize_validate
 					int computedTarget = bitsToInt(targetSpectrum);
 					if (computedTarget != target)
 					{
-						System.err.println("Output spectrum did not match target spectrum: " + target);
-						return false;
+						error("Output spectrum did not match target spectrum: " + target);
+						failures.add(target);
+						error("\nComputed and target:");
+						error("   " + computedTarget);
+						error("   " + target);
 					}
-					disp("Computed and target:");
+					disp("\nComputed and target:");
 					disp("   " + computedTarget);
 					disp("   " + target);
 				}
 			}
 		}
 
-		return valid;
+		return failures;
 	}
 
 	public static int bitsToInt(int[] bits)
@@ -2348,9 +2354,21 @@ public class MatrixOptimize_validate
 						pw.close();
 					}
 				}
-				else if (cmd == 3)
+				else if (cmd == 3) // TODO: make this a separate class... research code sucks!
 				{
-					System.out.println(validateCircuit(args[1]));
+					ArrayList<Integer> failures = validateCircuit(args[1]);
+					if (failures.size() == 0) 
+					{
+						System.out.println("\n\n********************\n\nAll circuits passed verification");
+					}
+					else
+					{
+						System.out.println(failures.size() + " circuits failed verification:");
+						for (Integer target : failures)
+						{
+							System.out.println("   -> " + target);
+						}
+					}
 				}
 			}
 		}
